@@ -6,8 +6,8 @@
 <title>나의 비서 — 웹 테스터</title>
 <style>
   :root{
-    --bg:#08080A; --surface:#0E0E12; --border:rgba(255,255,255,0.09);
-    --text:#F2EFE9; --muted:#8C8C95; --faint:#5A5A63; --accent:#C9A96A;
+    --bg:#08080A; --surface:#0E0E12; --surface2:#14141A; --border:rgba(255,255,255,0.09);
+    --text:#F2EFE9; --muted:#8C8C95; --faint:#5A5A63; --accent:#C9A96A; --accentSoft:rgba(201,169,106,0.14);
   }
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--text);
@@ -15,36 +15,97 @@
     display:flex;flex-direction:column;height:100vh}
   header{padding:12px 16px;border-bottom:1px solid var(--border);
     display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-  header h1{font-family:Georgia,serif;font-size:18px;font-weight:500;margin:0}
+  header h1{font-family:Georgia,serif;font-size:18px;font-weight:500;margin:0;white-space:nowrap}
   .cfg{display:flex;align-items:center;gap:8px;margin-left:auto;flex-wrap:wrap}
   input,button,textarea{font:inherit}
   input[type=text]{background:var(--surface);border:1px solid var(--border);color:var(--text);
-    border-radius:8px;padding:7px 10px;min-width:260px}
+    border-radius:8px;padding:7px 10px;min-width:230px}
   button{background:var(--surface);border:1px solid var(--border);color:var(--text);
-    border-radius:8px;padding:7px 12px;cursor:pointer}
+    border-radius:8px;padding:7px 12px;cursor:pointer;transition:.15s}
+  button:hover{border-color:var(--accent)}
   button.primary{background:var(--accent);color:#1A1306;border-color:var(--accent);font-weight:600}
   button:disabled{opacity:.5;cursor:default}
   #status{font-size:12px;color:var(--muted)}
-  #log{flex:1;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:16px}
-  .empty{margin:auto;text-align:center;color:var(--muted);max-width:420px}
+  #log{flex:1;overflow:auto;padding:18px 16px;display:flex;flex-direction:column;gap:18px}
+  .empty{margin:auto;text-align:center;color:var(--muted);max-width:440px}
   .empty .big{font-family:Georgia,serif;font-size:32px;color:var(--text)}
   .ex{display:inline-block;margin:4px;padding:6px 10px;border:1px solid var(--border);
-    border-radius:8px;background:var(--surface);cursor:pointer;font-size:13px}
-  .turn{display:flex;flex-direction:column;gap:8px}
+    border-radius:8px;background:var(--surface);cursor:pointer;font-size:13px;transition:.15s}
+  .ex:hover{border-color:var(--accent);color:var(--text)}
+
+  .turn{display:flex;flex-direction:column;gap:10px;animation:turnIn .3s ease}
+  @keyframes turnIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
   .user{align-self:flex-end;max-width:85%;background:var(--accent);color:#1A1306;
-    border-radius:18px 18px 6px 18px;padding:9px 13px;white-space:pre-wrap}
-  .agent{align-self:flex-start;max-width:90%;background:var(--surface);border:1px solid var(--border);
-    border-radius:18px 18px 18px 6px;padding:11px 13px;white-space:pre-wrap;line-height:1.5}
-  .badges{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+    border-radius:18px 18px 6px 18px;padding:9px 13px;white-space:pre-wrap;line-height:1.45}
+  .agent{align-self:flex-start;max-width:92%;background:var(--surface);border:1px solid var(--border);
+    border-radius:18px 18px 18px 6px;padding:13px 15px;line-height:1.55;min-width:60px}
+
+  /* 답변 중 인디케이터 */
+  .typing{display:inline-flex;align-items:center;gap:7px;color:var(--muted);font-size:14px}
+  .dots{display:inline-flex;gap:4px}
+  .dots i{width:7px;height:7px;border-radius:50%;background:var(--accent);display:inline-block;
+    animation:bounce 1.1s infinite ease-in-out}
+  .dots i:nth-child(2){animation-delay:.18s}
+  .dots i:nth-child(3){animation-delay:.36s}
+  @keyframes bounce{0%,80%,100%{transform:scale(.5);opacity:.4}40%{transform:scale(1);opacity:1}}
+  .caret{display:inline-block;width:8px;height:1.05em;background:var(--accent);
+    margin-left:2px;vertical-align:text-bottom;border-radius:1px;animation:blink .9s step-start infinite}
+  @keyframes blink{50%{opacity:0}}
+
+  /* 순차 등장 블록 */
+  .md-block{opacity:0;animation:rise .5s cubic-bezier(.2,.7,.2,1) forwards}
+  @keyframes rise{from{opacity:0;transform:translateY(9px);filter:blur(3px)}
+                  to{opacity:1;transform:none;filter:none}}
+
+  /* 마크다운 스타일 */
+  .md>*:first-child{margin-top:0}
+  .md>*:last-child{margin-bottom:0}
+  .md-p{margin:.5em 0}
+  .md-h{margin:.7em 0 .4em;line-height:1.3;font-weight:600}
+  .md-h1{font-size:1.35em} .md-h2{font-size:1.2em;color:var(--text)}
+  .md-h3{font-size:1.06em;color:var(--accent)} .md-h4,.md-h5,.md-h6{font-size:1em;color:var(--accent)}
+  .md-ul,.md-ol{margin:.45em 0;padding-left:1.3em}
+  .md-ul li,.md-ol li{margin:.22em 0}
+  .md-ul{list-style:none;padding-left:1.1em}
+  .md-ul li::before{content:"";display:inline-block;width:5px;height:5px;border-radius:50%;
+    background:var(--accent);margin-right:9px;margin-left:-14px;vertical-align:middle}
+  .md-quote{margin:.6em 0;padding:.5em .9em;border-left:3px solid var(--accent);
+    background:var(--accentSoft);border-radius:0 8px 8px 0;color:var(--text)}
+  .md-hr{border:none;border-top:1px solid var(--border);margin:.9em 0}
+  .md-pre{background:#000;border:1px solid var(--border);border-radius:10px;padding:11px 13px;
+    overflow:auto;margin:.6em 0}
+  .md-pre code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;color:#D9D2C5}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.9em;
+    background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:1px 5px}
+  .md a{color:var(--accent);text-decoration:underline;text-underline-offset:2px}
+  .md-img{max-width:100%;border-radius:10px;border:1px solid var(--border);margin:.5em 0;display:block}
+  strong{color:var(--text);font-weight:700}
+  em{font-style:italic;color:var(--text)}
+
+  /* 도표 */
+  .md-tablewrap{overflow-x:auto;margin:.7em 0;border:1px solid var(--border);border-radius:12px}
+  .md-table{border-collapse:collapse;width:100%;font-size:13.5px}
+  .md-table th,.md-table td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--border)}
+  .md-table th{background:var(--accentSoft);color:var(--accent);font-weight:600;white-space:nowrap}
+  .md-table tr:last-child td{border-bottom:none}
+  .md-table tbody tr:nth-child(even){background:rgba(255,255,255,0.02)}
+  .md-table tbody tr:hover{background:var(--accentSoft)}
+
+  .badges{display:flex;gap:6px;flex-wrap:wrap;margin-top:11px}
   .badge{font-size:11px;color:var(--muted);border:1px solid var(--border);background:var(--bg);
-    border-radius:8px;padding:2px 8px}
-  .cite{display:block;color:var(--accent);font-size:12px;text-decoration:underline;margin-top:3px;
-    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    border-radius:8px;padding:3px 9px;display:inline-flex;align-items:center;gap:4px}
+  .cites{margin-top:9px;display:flex;flex-direction:column;gap:4px}
+  .cite{color:var(--accent);font-size:12px;text-decoration:none;overflow:hidden;text-overflow:ellipsis;
+    white-space:nowrap;border:1px solid var(--border);border-radius:8px;padding:5px 9px;background:var(--bg)}
+  .cite:hover{border-color:var(--accent)}
+  .meta-wrap{opacity:0;animation:rise .4s ease forwards}
   .err{color:#E5894A}
+
   footer{border-top:1px solid var(--border);padding:12px 16px;display:flex;flex-direction:column;gap:8px}
   .row{display:flex;gap:8px;align-items:flex-end}
   textarea{flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);
     border-radius:12px;padding:10px 12px;resize:none;min-height:46px;max-height:140px}
+  textarea:focus,input:focus{outline:none;border-color:var(--accent)}
   .thumbs{display:flex;gap:6px;flex-wrap:wrap}
   .thumb{position:relative}
   .thumb img{height:48px;width:48px;object-fit:cover;border-radius:8px;border:1px solid var(--border)}
@@ -74,34 +135,89 @@
       <textarea id="text" placeholder="무엇이든 물어보세요 (Enter 전송, Shift+Enter 줄바꿈)"></textarea>
       <button id="send" class="primary">전송</button>
     </div>
-    <div class="meta">이 테스터는 실제 백엔드를 호출합니다. 백엔드에 ANTHROPIC_API_KEY 가 설정돼 있어야 응답합니다.</div>
+    <div class="meta">실제 백엔드를 호출합니다. 백엔드에 ANTHROPIC_API_KEY 가 설정돼 있어야 응답합니다.</div>
   </footer>
 
 <script>
 const $ = (id) => document.getElementById(id);
 const log = $('log');
-let images = []; // {file, url}
+let images = [];
 
-// 엔드포인트 기본값: Vercel 등에 호스팅되면 같은 오리진, 로컬 file:// 면 localhost.
 $('endpoint').value =
   (location.protocol === 'http:' || location.protocol === 'https:')
     ? `${location.origin}/v1/agent/multimodal`
     : 'http://localhost:8787/v1/agent/multimodal';
 
-function render(){
-  if (!log.dataset.has) {
-    log.innerHTML = `<div class="empty">
-      <div class="big">안녕하세요</div>
-      <p>검색·번역·날씨를 도와드릴게요.</p>
-      <div>
-        <span class="ex">제주 주말 날씨 알려줘</span>
-        <span class="ex">"맛있게 드세요" 일본어로 번역</span>
-        <span class="ex">요즘 원/달러 환율 어때?</span>
-      </div></div>`;
-    log.querySelectorAll('.ex').forEach(e=>e.onclick=()=>{ $('text').value=e.textContent; $('text').focus(); });
-  }
+/* ---------- 미니 마크다운 렌더러 ---------- */
+function escapeHtml(s){return s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function inline(s){
+  return s
+    .replace(/!\[([^\]]*)\]\(([^)\s]+)\)/g,'<img alt="$1" src="$2" class="md-img"/>')
+    .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>')
+    .replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>')
+    .replace(/(^|[^*])\*([^*\n]+)\*/g,'$1<em>$2</em>')
+    .replace(/`([^`]+)`/g,'<code>$1</code>');
 }
-render();
+function splitRow(l){ return l.trim().replace(/^\|/,'').replace(/\|$/,'').split('|').map(s=>s.trim()); }
+function isTableSep(l){ return /^\s*\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)+\|?\s*$/.test(l||''); }
+function renderMarkdown(md){
+  const lines = md.replace(/\r/g,'').split('\n');
+  let html=''; let i=0;
+  while(i<lines.length){
+    const line=lines[i];
+    if(/^```/.test(line)){
+      i++; let code='';
+      while(i<lines.length && !/^```/.test(lines[i])){ code+=lines[i]+'\n'; i++; }
+      i++; html+=`<pre class="md-pre"><code>${escapeHtml(code.replace(/\n$/,''))}</code></pre>`; continue;
+    }
+    if(/^\s*([-*_])\1{2,}\s*$/.test(line)){ html+='<hr class="md-hr"/>'; i++; continue; }
+    const h=line.match(/^(#{1,6})\s+(.*)$/);
+    if(h){ const lv=h[1].length; html+=`<h${lv} class="md-h md-h${lv}">${inline(escapeHtml(h[2]))}</h${lv}>`; i++; continue; }
+    if(line.includes('|') && isTableSep(lines[i+1])){
+      const header=splitRow(line); i+=2; const rows=[];
+      while(i<lines.length && lines[i].includes('|') && lines[i].trim()!==''){ rows.push(splitRow(lines[i])); i++; }
+      let t='<div class="md-tablewrap"><table class="md-table"><thead><tr>';
+      t+=header.map(c=>`<th>${inline(escapeHtml(c))}</th>`).join('')+'</tr></thead><tbody>';
+      t+=rows.map(r=>'<tr>'+r.map(c=>`<td>${inline(escapeHtml(c))}</td>`).join('')+'</tr>').join('');
+      html+=t+'</tbody></table></div>'; continue;
+    }
+    if(/^\s*>\s?/.test(line)){
+      let q=''; while(i<lines.length && /^\s*>\s?/.test(lines[i])){ q+=lines[i].replace(/^\s*>\s?/,'')+'\n'; i++; }
+      html+=`<blockquote class="md-quote">${inline(escapeHtml(q.trim())).replace(/\n/g,'<br/>')}</blockquote>`; continue;
+    }
+    if(/^\s*[-*+]\s+/.test(line)){
+      let items=''; while(i<lines.length && /^\s*[-*+]\s+/.test(lines[i])){ items+=`<li>${inline(escapeHtml(lines[i].replace(/^\s*[-*+]\s+/,'')))}</li>`; i++; }
+      html+=`<ul class="md-ul">${items}</ul>`; continue;
+    }
+    if(/^\s*\d+\.\s+/.test(line)){
+      let items=''; while(i<lines.length && /^\s*\d+\.\s+/.test(lines[i])){ items+=`<li>${inline(escapeHtml(lines[i].replace(/^\s*\d+\.\s+/,'')))}</li>`; i++; }
+      html+=`<ol class="md-ol">${items}</ol>`; continue;
+    }
+    if(line.trim()===''){ i++; continue; }
+    let para=line; i++;
+    while(i<lines.length && lines[i].trim()!=='' &&
+          !/^(#{1,6}\s|```|\s*>|\s*[-*+]\s|\s*\d+\.\s)/.test(lines[i]) &&
+          !(lines[i].includes('|') && isTableSep(lines[i+1]))){
+      para+='\n'+lines[i]; i++;
+    }
+    html+=`<p class="md-p">${inline(escapeHtml(para)).replace(/\n/g,'<br/>')}</p>`;
+  }
+  return html;
+}
+
+/* ---------- 빈 상태 ---------- */
+function renderEmpty(){
+  log.innerHTML = `<div class="empty">
+    <div class="big">안녕하세요</div>
+    <p>검색·번역·날씨를 도와드릴게요. 답이 표·목록으로 정리되어 나옵니다.</p>
+    <div>
+      <span class="ex">서울이랑 부산 주말 날씨 비교해줘</span>
+      <span class="ex">"맛있게 드세요" 일본어·영어로 번역</span>
+      <span class="ex">최신 아이폰 모델과 가격 표로</span>
+    </div></div>`;
+  log.querySelectorAll('.ex').forEach(e=>e.onclick=()=>{ $('text').value=e.textContent; $('text').focus(); });
+}
+renderEmpty();
 
 function renderThumbs(){
   $('thumbs').innerHTML='';
@@ -112,7 +228,6 @@ function renderThumbs(){
     $('thumbs').appendChild(d);
   });
 }
-
 $('attach').onclick=()=>$('file').click();
 $('file').onchange=(e)=>{
   for(const f of e.target.files){ if(images.length>=6) break; images.push({file:f,url:URL.createObjectURL(f)}); }
@@ -125,21 +240,52 @@ $('health').onclick=async()=>{
   try{
     const r=await fetch(base+'/health'); const d=await r.json();
     $('status').textContent = d.ready
-      ? `정상 · 모델 ${d.model} · 웹검색 ${d.webSearch?'ON':'OFF'}`
+      ? `정상 · ${d.model} · 웹검색 ${d.webSearch?'ON':'OFF'}${d.accessProtected?' · 🔒':''}`
       : `⚠ ${d.reason||'준비 안 됨'}`;
   }catch(err){ $('status').textContent='연결 실패: '+err.message; }
 };
 
+/* ---------- 턴 생성 ---------- */
 function addTurn(question, imageCount){
-  log.dataset.has='1';
-  if(!log.querySelector('.turn')) log.innerHTML='';
+  if(log.querySelector('.empty')) log.innerHTML='';
   const t=document.createElement('div'); t.className='turn';
   const u=document.createElement('div'); u.className='user';
   u.textContent=question + (imageCount?`  🖼×${imageCount}`:'');
-  const a=document.createElement('div'); a.className='agent'; a.textContent='생각 중…';
+  const a=document.createElement('div'); a.className='agent';
+  a.innerHTML=`<span class="typing">답변 중<span class="dots"><i></i><i></i><i></i></span></span>`;
   t.appendChild(u); t.appendChild(a); log.appendChild(t);
   log.scrollTop=log.scrollHeight;
   return a;
+}
+
+/* 마크다운을 렌더 후 블록을 순차적으로 등장시킨다 (생성되는 느낌) */
+function revealAnswer(bubble, message, meta){
+  bubble.innerHTML = `<div class="md"></div><span class="caret"></span>`;
+  const md = bubble.querySelector('.md');
+  md.innerHTML = renderMarkdown(message);
+  const blocks=[...md.children];
+  const step=Math.min(150, Math.max(70, 900/Math.max(blocks.length,1)));
+  blocks.forEach((b,idx)=>{ b.classList.add('md-block'); b.style.animationDelay=(idx*step)+'ms'; });
+
+  const done=()=>{
+    const caret=bubble.querySelector('.caret'); if(caret) caret.remove();
+    if(meta){ bubble.insertAdjacentHTML('beforeend', meta); }
+    log.scrollTop=log.scrollHeight;
+  };
+  const total=blocks.length*step+450;
+  // 등장 동안 자동 스크롤
+  const sc=setInterval(()=>{ log.scrollTop=log.scrollHeight; },120);
+  setTimeout(()=>{ clearInterval(sc); done(); }, total);
+}
+
+function metaHtml(d, ms){
+  let h='';
+  const tools=(d.toolsUsed||[]).map(x=>x==='web_search'?'🔍 웹검색':x==='get_weather'?'☁️ 날씨':x);
+  const badges=[...tools]; if(ms!=null) badges.push(`⏱ ${(ms/1000).toFixed(1)}s`);
+  if(badges.length) h+=`<div class="badges">${badges.map(b=>`<span class="badge">${b}</span>`).join('')}</div>`;
+  const cs=(d.citations||[]).slice(0,5);
+  if(cs.length) h+=`<div class="cites">${cs.map((c,i)=>`<a class="cite" href="${c.url}" target="_blank" rel="noopener">${i+1}. ${escapeHtml(c.title||c.url)}</a>`).join('')}</div>`;
+  return `<div class="meta-wrap">${h}</div>`;
 }
 
 async function send(){
@@ -153,17 +299,15 @@ async function send(){
   });
   const wire={
     meta:{device:'Android',networkType:'WiFi',sentTimestamp:Date.now(),locale:'ko-KR'},
-    inputs:{
-      text, hasAudio:false,
-      images: images.map((im,i)=>({uri:imageNames[i],mimeType:im.file.type||'image/jpeg',fileName:imageNames[i]}))
-    }
+    inputs:{ text, hasAudio:false,
+      images: images.map((im,i)=>({uri:imageNames[i],mimeType:im.file.type||'image/jpeg',fileName:imageNames[i]})) }
   };
   const form=new FormData();
   form.append('payload', JSON.stringify(wire));
   images.forEach((im,i)=>form.append(imageNames[i], im.file, imageNames[i]));
 
   const bubble=addTurn(text||'(이미지)', images.length);
-  $('text').value=''; const sent=images; images=[]; renderThumbs();
+  $('text').value=''; images=[]; renderThumbs();
 
   const t0=Date.now();
   try{
@@ -172,21 +316,9 @@ async function send(){
     if(tok) headers['x-access-token']=tok;
     const r=await fetch($('endpoint').value,{method:'POST',body:form,headers});
     const d=await r.json();
-    if(!d.ok){ bubble.innerHTML=`<span class="err">⚠ ${d.error||('HTTP '+r.status)}</span>`; }
-    else{
-      bubble.textContent=d.message||'(응답 없음)';
-      const badges=[];
-      (d.toolsUsed||[]).forEach(x=>badges.push(x==='web_search'?'🔍 웹검색':x==='get_weather'?'☁ 날씨':x));
-      badges.push(`⏱ ${Date.now()-t0}ms`);
-      const bd=document.createElement('div'); bd.className='badges';
-      bd.innerHTML=badges.map(b=>`<span class="badge">${b}</span>`).join('');
-      bubble.appendChild(bd);
-      (d.citations||[]).slice(0,5).forEach((c,i)=>{
-        const a=document.createElement('a'); a.className='cite'; a.href=c.url; a.target='_blank';
-        a.textContent=`${i+1}. ${c.title||c.url}`; bubble.appendChild(a);
-      });
-    }
-  }catch(err){ bubble.innerHTML=`<span class="err">연결 실패: ${err.message}</span>`; }
+    if(!d.ok){ bubble.innerHTML=`<span class="err">⚠ ${escapeHtml(d.error||('HTTP '+r.status))}</span>`; }
+    else{ revealAnswer(bubble, d.message||'(응답 없음)', metaHtml(d, d.elapsedMs!=null?d.elapsedMs:(Date.now()-t0))); }
+  }catch(err){ bubble.innerHTML=`<span class="err">연결 실패: ${escapeHtml(err.message)}</span>`; }
   finally{ $('send').disabled=false; log.scrollTop=log.scrollHeight; }
 }
 
