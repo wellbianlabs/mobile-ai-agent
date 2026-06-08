@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+<title>나의 비서 — 웹 테스터</title>
+<style>
+  :root{
+    --bg:#08080A; --surface:#0E0E12; --border:rgba(255,255,255,0.09);
+    --text:#F2EFE9; --muted:#8C8C95; --faint:#5A5A63; --accent:#C9A96A;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    display:flex;flex-direction:column;height:100vh}
+  header{padding:12px 16px;border-bottom:1px solid var(--border);
+    display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  header h1{font-family:Georgia,serif;font-size:18px;font-weight:500;margin:0}
+  .cfg{display:flex;align-items:center;gap:8px;margin-left:auto;flex-wrap:wrap}
+  input,button,textarea{font:inherit}
+  input[type=text]{background:var(--surface);border:1px solid var(--border);color:var(--text);
+    border-radius:8px;padding:7px 10px;min-width:260px}
+  button{background:var(--surface);border:1px solid var(--border);color:var(--text);
+    border-radius:8px;padding:7px 12px;cursor:pointer}
+  button.primary{background:var(--accent);color:#1A1306;border-color:var(--accent);font-weight:600}
+  button:disabled{opacity:.5;cursor:default}
+  #status{font-size:12px;color:var(--muted)}
+  #log{flex:1;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:16px}
+  .empty{margin:auto;text-align:center;color:var(--muted);max-width:420px}
+  .empty .big{font-family:Georgia,serif;font-size:32px;color:var(--text)}
+  .ex{display:inline-block;margin:4px;padding:6px 10px;border:1px solid var(--border);
+    border-radius:8px;background:var(--surface);cursor:pointer;font-size:13px}
+  .turn{display:flex;flex-direction:column;gap:8px}
+  .user{align-self:flex-end;max-width:85%;background:var(--accent);color:#1A1306;
+    border-radius:18px 18px 6px 18px;padding:9px 13px;white-space:pre-wrap}
+  .agent{align-self:flex-start;max-width:90%;background:var(--surface);border:1px solid var(--border);
+    border-radius:18px 18px 18px 6px;padding:11px 13px;white-space:pre-wrap;line-height:1.5}
+  .badges{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+  .badge{font-size:11px;color:var(--muted);border:1px solid var(--border);background:var(--bg);
+    border-radius:8px;padding:2px 8px}
+  .cite{display:block;color:var(--accent);font-size:12px;text-decoration:underline;margin-top:3px;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .err{color:#E5894A}
+  footer{border-top:1px solid var(--border);padding:12px 16px;display:flex;flex-direction:column;gap:8px}
+  .row{display:flex;gap:8px;align-items:flex-end}
+  textarea{flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);
+    border-radius:12px;padding:10px 12px;resize:none;min-height:46px;max-height:140px}
+  .thumbs{display:flex;gap:6px;flex-wrap:wrap}
+  .thumb{position:relative}
+  .thumb img{height:48px;width:48px;object-fit:cover;border-radius:8px;border:1px solid var(--border)}
+  .thumb b{position:absolute;top:-6px;right:-6px;background:#000;color:#fff;border-radius:50%;
+    width:18px;height:18px;font-size:11px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+  .meta{font-size:11px;color:var(--faint)}
+</style>
+</head>
+<body>
+  <header>
+    <h1>나의 비서 · 웹 테스터</h1>
+    <div class="cfg">
+      <input id="endpoint" type="text" placeholder="백엔드 엔드포인트" />
+      <input id="token" type="text" placeholder="접근 토큰(설정 시)" style="min-width:140px" />
+      <button id="health">상태확인</button>
+      <span id="status">대기 중</span>
+    </div>
+  </header>
+
+  <div id="log"></div>
+
+  <footer>
+    <div class="thumbs" id="thumbs"></div>
+    <div class="row">
+      <button id="attach" title="이미지 첨부">＋ 이미지</button>
+      <input id="file" type="file" accept="image/*" multiple hidden />
+      <textarea id="text" placeholder="무엇이든 물어보세요 (Enter 전송, Shift+Enter 줄바꿈)"></textarea>
+      <button id="send" class="primary">전송</button>
+    </div>
+    <div class="meta">이 테스터는 실제 백엔드를 호출합니다. 백엔드에 ANTHROPIC_API_KEY 가 설정돼 있어야 응답합니다.</div>
+  </footer>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const log = $('log');
+let images = []; // {file, url}
+
+// 엔드포인트 기본값: Vercel 등에 호스팅되면 같은 오리진, 로컬 file:// 면 localhost.
+$('endpoint').value =
+  (location.protocol === 'http:' || location.protocol === 'https:')
+    ? `${location.origin}/v1/agent/multimodal`
+    : 'http://localhost:8787/v1/agent/multimodal';
+
+function render(){
+  if (!log.dataset.has) {
+    log.innerHTML = `<div class="empty">
+      <div class="big">안녕하세요</div>
+      <p>검색·번역·날씨를 도와드릴게요.</p>
+      <div>
+        <span class="ex">제주 주말 날씨 알려줘</span>
+        <span class="ex">"맛있게 드세요" 일본어로 번역</span>
+        <span class="ex">요즘 원/달러 환율 어때?</span>
+      </div></div>`;
+    log.querySelectorAll('.ex').forEach(e=>e.onclick=()=>{ $('text').value=e.textContent; $('text').focus(); });
+  }
+}
+render();
+
+function renderThumbs(){
+  $('thumbs').innerHTML='';
+  images.forEach((im,i)=>{
+    const d=document.createElement('div'); d.className='thumb';
+    d.innerHTML=`<img src="${im.url}"/><b>×</b>`;
+    d.querySelector('b').onclick=()=>{ images.splice(i,1); renderThumbs(); };
+    $('thumbs').appendChild(d);
+  });
+}
+
+$('attach').onclick=()=>$('file').click();
+$('file').onchange=(e)=>{
+  for(const f of e.target.files){ if(images.length>=6) break; images.push({file:f,url:URL.createObjectURL(f)}); }
+  $('file').value=''; renderThumbs();
+};
+
+$('health').onclick=async()=>{
+  const base=$('endpoint').value.replace(/\/v1\/.*/, '');
+  $('status').textContent='확인 중…';
+  try{
+    const r=await fetch(base+'/health'); const d=await r.json();
+    $('status').textContent = d.ready
+      ? `정상 · 모델 ${d.model} · 웹검색 ${d.webSearch?'ON':'OFF'}`
+      : `⚠ ${d.reason||'준비 안 됨'}`;
+  }catch(err){ $('status').textContent='연결 실패: '+err.message; }
+};
+
+function addTurn(question, imageCount){
+  log.dataset.has='1';
+  if(!log.querySelector('.turn')) log.innerHTML='';
+  const t=document.createElement('div'); t.className='turn';
+  const u=document.createElement('div'); u.className='user';
+  u.textContent=question + (imageCount?`  🖼×${imageCount}`:'');
+  const a=document.createElement('div'); a.className='agent'; a.textContent='생각 중…';
+  t.appendChild(u); t.appendChild(a); log.appendChild(t);
+  log.scrollTop=log.scrollHeight;
+  return a;
+}
+
+async function send(){
+  const text=$('text').value.trim();
+  if(!text && images.length===0) return;
+  $('send').disabled=true;
+
+  const imageNames = images.map((im,i)=>{
+    const ext=(im.file.name.match(/\.(jpe?g|png|webp|gif)$/i)||['.jpg'])[0];
+    return `image_${i}${ext}`;
+  });
+  const wire={
+    meta:{device:'Android',networkType:'WiFi',sentTimestamp:Date.now(),locale:'ko-KR'},
+    inputs:{
+      text, hasAudio:false,
+      images: images.map((im,i)=>({uri:imageNames[i],mimeType:im.file.type||'image/jpeg',fileName:imageNames[i]}))
+    }
+  };
+  const form=new FormData();
+  form.append('payload', JSON.stringify(wire));
+  images.forEach((im,i)=>form.append(imageNames[i], im.file, imageNames[i]));
+
+  const bubble=addTurn(text||'(이미지)', images.length);
+  $('text').value=''; const sent=images; images=[]; renderThumbs();
+
+  const t0=Date.now();
+  try{
+    const headers={};
+    const tok=$('token').value.trim();
+    if(tok) headers['x-access-token']=tok;
+    const r=await fetch($('endpoint').value,{method:'POST',body:form,headers});
+    const d=await r.json();
+    if(!d.ok){ bubble.innerHTML=`<span class="err">⚠ ${d.error||('HTTP '+r.status)}</span>`; }
+    else{
+      bubble.textContent=d.message||'(응답 없음)';
+      const badges=[];
+      (d.toolsUsed||[]).forEach(x=>badges.push(x==='web_search'?'🔍 웹검색':x==='get_weather'?'☁ 날씨':x));
+      badges.push(`⏱ ${Date.now()-t0}ms`);
+      const bd=document.createElement('div'); bd.className='badges';
+      bd.innerHTML=badges.map(b=>`<span class="badge">${b}</span>`).join('');
+      bubble.appendChild(bd);
+      (d.citations||[]).slice(0,5).forEach((c,i)=>{
+        const a=document.createElement('a'); a.className='cite'; a.href=c.url; a.target='_blank';
+        a.textContent=`${i+1}. ${c.title||c.url}`; bubble.appendChild(a);
+      });
+    }
+  }catch(err){ bubble.innerHTML=`<span class="err">연결 실패: ${err.message}</span>`; }
+  finally{ $('send').disabled=false; log.scrollTop=log.scrollHeight; }
+}
+
+$('send').onclick=send;
+$('text').addEventListener('keydown',(e)=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); send(); }});
+</script>
+</body>
+</html>
