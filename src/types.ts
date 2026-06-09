@@ -14,6 +14,10 @@ export interface IMobileAgentUnifiedPayload {
     sentTimestamp: number;
     /** 프론트가 보낼 수도 있는 로케일(ko-KR 등). 선택. */
     locale?: string;
+    /** 현재 위치 지명(역지오코딩, 예: "강남구"). 위치 기반 질의 기본값. */
+    place?: string | null;
+    /** 현재 위치 좌표. weather 도구에 정밀 전달용. */
+    coords?: { lat: number; lon: number };
   };
   inputs: {
     text: string;

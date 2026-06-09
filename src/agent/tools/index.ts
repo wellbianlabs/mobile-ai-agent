@@ -15,7 +15,10 @@ export interface ClientTool {
 export const clientTools: Record<string, ClientTool> = {
   get_weather: {
     spec: weatherToolSpec,
-    run: (input) => runWeather(input as { location?: string; days?: number }),
+    run: (input) =>
+      runWeather(
+        input as { location?: string; latitude?: number; longitude?: number; days?: number },
+      ),
   },
 };
 

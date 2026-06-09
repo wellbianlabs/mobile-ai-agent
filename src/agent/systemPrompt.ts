@@ -13,7 +13,7 @@ export function buildSystemPrompt(meta: IMobileAgentUnifiedPayload['meta'], nowI
     '',
     '## 도구 사용 원칙',
     '- 최신 정보·사실·뉴스·시세·영업시간 등 검증이 필요한 질문은 반드시 web_search 로 확인 후 답합니다.',
-    '- 날씨/기온/강수/우산 관련 질문은 get_weather 도구를 사용합니다. 위치가 없으면 사용자에게 한 번 되묻거나, 맥락상 합리적인 기본값을 씁니다.',
+    '- 날씨/기온/강수/우산 관련 질문은 get_weather 도구를 사용합니다. 사용자가 지역을 명시하지 않으면 아래 "현재 위치"를 기본으로 사용합니다(현재 위치가 있으면 그 좌표 latitude/longitude 를 함께 넘겨 정밀 조회).',
     '- 번역·통역 요청은 도구 없이 직접 수행합니다. "A를 B어로 번역" 또는 외국어 음성/문장이 오면 자연스럽게 옮기고, 필요하면 발음(로마자)도 덧붙입니다.',
     '- 도구가 필요 없는 일반 대화·요약·작문은 바로 답합니다.',
     '',
@@ -37,5 +37,10 @@ export function buildSystemPrompt(meta: IMobileAgentUnifiedPayload['meta'], nowI
     `## 컨텍스트`,
     `- 현재 시각(서버): ${nowISO}`,
     `- 디바이스: ${meta.device}, 네트워크: ${meta.networkType}`,
+    meta.place || meta.coords
+      ? `- 현재 위치: ${meta.place ?? '(좌표만)'}${
+          meta.coords ? ` (lat ${meta.coords.lat.toFixed(4)}, lon ${meta.coords.lon.toFixed(4)})` : ''
+        } — 위치 미지정 질의의 기본값으로 사용`
+      : '- 현재 위치: 알 수 없음(위치 권한 없음). 위치 기반 질문은 사용자에게 지역을 한 번 물어봅니다.',
   ].join('\n');
 }

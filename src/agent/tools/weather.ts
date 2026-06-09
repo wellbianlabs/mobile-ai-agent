@@ -18,7 +18,16 @@ export const weatherToolSpec: Anthropic.Tool = {
     properties: {
       location: {
         type: 'string',
-        description: '도시 또는 지역 이름(예: "서울", "제주", "Tokyo").',
+        description:
+          '도시 또는 지역 이름(예: "서울", "제주", "Tokyo"). 현재 위치 기준이면 컨텍스트의 지명을 쓴다.',
+      },
+      latitude: {
+        type: 'number',
+        description: '위도. 현재 위치 좌표가 있으면 함께 전달하면 지오코딩을 생략해 정밀 조회한다.',
+      },
+      longitude: {
+        type: 'number',
+        description: '경도. latitude 와 쌍으로 전달.',
       },
       days: {
         type: 'integer',
@@ -86,15 +95,23 @@ async function geocode(location: string): Promise<GeoResult | null> {
 
 export async function runWeather(input: {
   location?: string;
+  latitude?: number;
+  longitude?: number;
   days?: number;
 }): Promise<unknown> {
   const location = (input.location ?? '').trim();
-  if (!location) return { error: 'location 이 비어 있습니다.' };
 
   const days = Math.min(Math.max(Math.round(input.days ?? 3), 1), 7);
 
-  const geo = await geocode(location);
-  if (!geo) return { error: `"${location}" 위치를 찾지 못했습니다.` };
+  // 좌표가 직접 주어지면 지오코딩 생략(현재 위치 정밀 조회).
+  let geo: GeoResult | null;
+  if (typeof input.latitude === 'number' && typeof input.longitude === 'number') {
+    geo = { name: location || '현재 위치', latitude: input.latitude, longitude: input.longitude };
+  } else {
+    if (!location) return { error: 'location 또는 좌표(latitude/longitude)가 필요합니다.' };
+    geo = await geocode(location);
+    if (!geo) return { error: `"${location}" 위치를 찾지 못했습니다.` };
+  }
 
   const url = new URL('https://api.open-meteo.com/v1/forecast');
   url.searchParams.set('latitude', String(geo.latitude));
