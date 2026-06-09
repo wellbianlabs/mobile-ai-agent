@@ -1,9 +1,11 @@
 import type Anthropic from '@anthropic-ai/sdk';
 
+import { weatherByCoords } from '../../weather/service.js';
+
 /**
- * 날씨 도구 — Open-Meteo(무료, API 키 불필요).
- *   1) Geocoding API 로 지명 → 위경도
- *   2) Forecast API 로 현재 + 일별 예보
+ * 날씨 도구.
+ *   - 좌표(latitude/longitude)가 오면: 케이웨더(한국·정밀) 우선, 폴백 Open-Meteo.
+ *   - 지명만 오면: Open-Meteo Geocoding → Forecast(현재 + 일별 예보).
  *
  * 모델이 호출하면 구조화 JSON 을 돌려주고, 모델이 자연어로 풀어 답한다.
  */
@@ -102,6 +104,32 @@ export async function runWeather(input: {
   const location = (input.location ?? '').trim();
 
   const days = Math.min(Math.max(Math.round(input.days ?? 3), 1), 7);
+
+  // 현재 위치(좌표) → 케이웨더 우선 통합 조회.
+  if (typeof input.latitude === 'number' && typeof input.longitude === 'number') {
+    const dto = await weatherByCoords(input.latitude, input.longitude, location || undefined);
+    if (dto) {
+      return {
+        source: dto.source, // "KWeather" | "Open-Meteo"
+        resolvedLocation: dto.place,
+        current: {
+          temperatureC: dto.current.temperatureC,
+          feelsLikeC: dto.current.feelsLikeC,
+          humidityPct: dto.current.humidityPct,
+          windMs: dto.current.windMs,
+          condition: dto.current.condition,
+          raining: dto.current.raining,
+        },
+        today: {
+          maxC: dto.today.maxC,
+          minC: dto.today.minC,
+          precipProbabilityPct: dto.today.precipProbabilityPct,
+        },
+        advice: dto.summary.advice,
+      };
+    }
+    // 통합 조회 실패 시 아래 Open-Meteo 좌표 경로로 폴백.
+  }
 
   // 좌표가 직접 주어지면 지오코딩 생략(현재 위치 정밀 조회).
   let geo: GeoResult | null;

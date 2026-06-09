@@ -36,6 +36,14 @@ export const config = {
   groqApiKey: process.env.GROQ_API_KEY ?? '',
 
   /**
+   * 케이웨더(KWeather) Air365 OpenAPI 키. 설정하면 한국 좌표의 날씨를
+   * 케이웨더(한국 현지·정밀)로 조회하고, 실패/해외는 Open-Meteo 로 폴백한다.
+   * 미설정 시 항상 Open-Meteo 사용.
+   */
+  kweatherApiKey: process.env.KWEATHER_API_KEY ?? '',
+  kweatherBase: process.env.KWEATHER_BASE ?? 'https://gateway.kweather.co.kr:8443/weather',
+
+  /**
    * 선택적 접근 토큰. 설정하면 /v1/agent 호출 시 x-access-token 헤더(또는 ?token=)가
    * 일치해야 한다. 공개 배포(Vercel) URL 에서 API 키 비용 남용을 막는 용도.
    */
