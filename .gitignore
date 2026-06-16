@@ -9,3 +9,7 @@ dist/
 
 # Claude Code local settings
 .claude/settings.local.json
+
+# 비밀값(로컬 전용) — 공개 저장소 커밋 금지
+SECRETS.local.md
+*.local.md
