@@ -17,7 +17,7 @@
 
 | 항목 | 위치 |
 |---|---|
-| **백엔드(두뇌) + 웹 테스터** | GitHub: `wellbianlabs/mobile-ai-agent` (구 `aroundz-io/mobile-ai-agent` = `aroundz` remote로 보존) · 로컬: `D:\Project\Aiagent` |
+| **백엔드(두뇌) + 웹 테스터** | GitHub: `wellbianlabs/mobile-ai-agent` · 로컬: `D:\Project\Aiagent` |
 | **모바일 앱(Expo/RN)** | GitHub: `wellbianlabs/mobile-ai-agent-app` · 로컬: `D:\Project\Multi-Modal Interface` |
 | **케이웨더 API 문서** | `C:\Users\rendermachine\Desktop\개발 소스\KW_기상API_OpenAPI_20250929_전체.pdf` |
 
@@ -27,7 +27,6 @@
 - 에이전트 API: `https://mobile-ai-agent-gray.vercel.app/v1/agent/multimodal`
 - 날씨 API: `https://mobile-ai-agent-gray.vercel.app/v1/weather?lat=&lon=`
 - ⚠️ 공개용은 **`-gray`** 도메인 사용. `-wellbianlabs` 도메인은 Vercel Authentication(SSO) 보호로 외부 차단됨(401).
-- (참고) 구 aroundz 배포 `https://mobile-ai-agent-tan.vercel.app/` 도 당분간 유지됨.
 
 ---
 
@@ -35,8 +34,8 @@
 
 | 서비스 | 계정 | 비고 |
 |---|---|---|
-| GitHub | **`wellbianlabs`** (admin@wellbianlabs.io) | 현 저장소 소유. push 인증은 wellbianlabs PAT 사용(이 PC 자격증명 관리자엔 aroundz-io만 있어 PAT 필요). 구 `aroundz-io`는 백엔드 `aroundz` remote로 보존 |
-| Vercel | **team `WELLBIAN`/`wellbianlabs`** (id `team_1CxBKfKNMGIn7MdOC1aRWAg0`), 프로젝트 `mobile-ai-agent` (`prj_5KFZ0GVko58g1bnRwF0gR3CBMuFV`) + `mobile-ai-agent-app` (`prj_a7qoP7Uwjx5naaBKymVCOYcbW5nJ`) | GitHub 연동 → push 시 자동 배포. (구 aroundz team `team_buUnOjsye3uBD82rrY9hyJXz` / `prj_bCrFTMrP8MA9kqM9hqqh83SxCqZS` 도 존재) |
+| GitHub | **`wellbianlabs`** (admin@wellbianlabs.io) | 저장소 소유. push 인증은 wellbianlabs PAT 사용(이 PC 자격증명 관리자에 wellbianlabs 자격증명이 없으면 PAT 필요) |
+| Vercel | **team `WELLBIAN`/`wellbianlabs`** (id `team_1CxBKfKNMGIn7MdOC1aRWAg0`), 프로젝트 `mobile-ai-agent` (`prj_5KFZ0GVko58g1bnRwF0gR3CBMuFV`) + `mobile-ai-agent-app` (`prj_a7qoP7Uwjx5naaBKymVCOYcbW5nJ`) | GitHub 연동 → push 시 자동 배포 |
 | Anthropic | (Claude API 키 보유) | Vercel 환경변수에 키 보관 |
 | 케이웨더 | Air365 OpenAPI | 키는 Vercel 환경변수에 넣는 중(§4) |
 
@@ -126,7 +125,7 @@ npm start                # = expo start --port 8083  → QR 스캔(폰 Expo Go)
 `D:\Project\Multi-Modal Interface` 는 이제 **git 저장소** (`origin` = `wellbianlabs/mobile-ai-agent-app`, `main`). 초기 커밋 완료.
 - `.gitignore`에 추가됨: `/android/`(prebuild 산출물 ~3GB), `/ios/`, `*.apk`/`*.aab`(81MB APK), `SECRETS.local.md`/`*.local.md`. `.env`도 무시됨(토큰 안전).
 - ⚠️ `android/`는 무시되므로, 그 안에 **수동 네이티브 수정이 있었다면** config plugin(app.json)으로 옮기거나 선별 커밋해야 함. APK는 `npx expo run:android --variant release` 또는 EAS로 재생성.
-- push 인증: wellbianlabs PAT 필요(이 PC 자격증명엔 aroundz-io만). 1회성으로 `git -c credential.helper= push https://x-access-token:<PAT>@github.com/...` 사용 — **remote URL/config에 토큰 저장 금지**.
+- push 인증: wellbianlabs PAT 필요. 1회성으로 `git -c credential.helper= push https://x-access-token:<PAT>@github.com/...` 사용 — **remote URL/config에 토큰 저장 금지**.
 
 ---
 
