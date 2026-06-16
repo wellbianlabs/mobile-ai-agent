@@ -1,7 +1,7 @@
 # 핸드오프북 — 나만의 모바일 AI 비서
 
 > 새 Claude 세션/계정이 이 문서만 읽고 작업을 이어갈 수 있도록 정리한 인수인계 노트.
-> 최종 업데이트: 2026-06-09
+> 최종 업데이트: 2026-06-16 — **wellbianlabs 계정으로 이전 완료**(GitHub repo 신규 생성 + Vercel 재배포).
 
 ---
 
@@ -17,16 +17,17 @@
 
 | 항목 | 위치 |
 |---|---|
-| **백엔드(두뇌) + 웹 테스터** | GitHub: `aroundz-io/mobile-ai-agent` · 로컬: `D:\Project\Aiagent` |
-| **모바일 앱(Expo/RN)** | 로컬: `D:\Project\Multi-Modal Interface` (⚠️ 아래 §7 참고 — 깃 미연동) |
+| **백엔드(두뇌) + 웹 테스터** | GitHub: `wellbianlabs/mobile-ai-agent` (구 `aroundz-io/mobile-ai-agent` = `aroundz` remote로 보존) · 로컬: `D:\Project\Aiagent` |
+| **모바일 앱(Expo/RN)** | GitHub: `wellbianlabs/mobile-ai-agent-app` · 로컬: `D:\Project\Multi-Modal Interface` |
 | **케이웨더 API 문서** | `C:\Users\rendermachine\Desktop\개발 소스\KW_기상API_OpenAPI_20250929_전체.pdf` |
 
-### 라이브 URL (배포됨)
-- 웹 테스터: **https://mobile-ai-agent-tan.vercel.app/**
-- 상태확인: https://mobile-ai-agent-tan.vercel.app/health
-- 에이전트 API: `https://mobile-ai-agent-tan.vercel.app/v1/agent/multimodal`
-- 날씨 API: `https://mobile-ai-agent-tan.vercel.app/v1/weather?lat=&lon=`
-- ⚠️ 공개용은 **`-tan`** 도메인 사용. `-aroundz` 도메인은 Vercel Authentication 보호로 외부 차단됨.
+### 라이브 URL (배포됨 — wellbianlabs Vercel 팀)
+- 웹 테스터: **https://mobile-ai-agent-gray.vercel.app/**
+- 상태확인: https://mobile-ai-agent-gray.vercel.app/health
+- 에이전트 API: `https://mobile-ai-agent-gray.vercel.app/v1/agent/multimodal`
+- 날씨 API: `https://mobile-ai-agent-gray.vercel.app/v1/weather?lat=&lon=`
+- ⚠️ 공개용은 **`-gray`** 도메인 사용. `-wellbianlabs` 도메인은 Vercel Authentication(SSO) 보호로 외부 차단됨(401).
+- (참고) 구 aroundz 배포 `https://mobile-ai-agent-tan.vercel.app/` 도 당분간 유지됨.
 
 ---
 
@@ -34,8 +35,8 @@
 
 | 서비스 | 계정 | 비고 |
 |---|---|---|
-| GitHub | `aroundz-io` | 저장소 소유. 자격증명은 Windows 자격증명 관리자에 저장됨(이 PC) |
-| Vercel | team `aroundz` (id `team_buUnOjsye3uBD82rrY9hyJXz`), 프로젝트 `mobile-ai-agent` (`prj_bCrFTMrP8MA9kqM9hqqh83SxCqZS`) | GitHub 연동 → push 시 자동 배포 |
+| GitHub | **`wellbianlabs`** (admin@wellbianlabs.io) | 현 저장소 소유. push 인증은 wellbianlabs PAT 사용(이 PC 자격증명 관리자엔 aroundz-io만 있어 PAT 필요). 구 `aroundz-io`는 백엔드 `aroundz` remote로 보존 |
+| Vercel | **team `WELLBIAN`/`wellbianlabs`** (id `team_1CxBKfKNMGIn7MdOC1aRWAg0`), 프로젝트 `mobile-ai-agent` (`prj_5KFZ0GVko58g1bnRwF0gR3CBMuFV`) + `mobile-ai-agent-app` (`prj_a7qoP7Uwjx5naaBKymVCOYcbW5nJ`) | GitHub 연동 → push 시 자동 배포. (구 aroundz team `team_buUnOjsye3uBD82rrY9hyJXz` / `prj_bCrFTMrP8MA9kqM9hqqh83SxCqZS` 도 존재) |
 | Anthropic | (Claude API 키 보유) | Vercel 환경변수에 키 보관 |
 | 케이웨더 | Air365 OpenAPI | 키는 Vercel 환경변수에 넣는 중(§4) |
 
@@ -69,18 +70,20 @@
 
 > 실제 값은 같은 폴더의 **`SECRETS.local.md`** (gitignore됨) 참고. 공개 저장소엔 절대 넣지 말 것.
 
-**Vercel 프로젝트 환경변수** (Settings → Environment Variables, Production):
-| 변수 | 용도 | 상태 |
+**Vercel 프로젝트 환경변수** — wellbianlabs `mobile-ai-agent` (Settings → Environment Variables, Production):
+| 변수 | 용도 | 상태(2026-06-16, 신규 wellbianlabs 프로젝트) |
 |---|---|---|
-| `ANTHROPIC_API_KEY` | Claude API | ✅ 설정됨 |
-| `AGENT_ACCESS_TOKEN` | 공개 URL 보호(앱·웹테스터가 같은 토큰 전송) | ✅ 설정됨 |
-| `KWEATHER_API_KEY` | 케이웨더 날씨 | ⏳ 사용자가 추가 중 (넣고 **Redeploy** 필요) |
+| `ANTHROPIC_API_KEY` | Claude API | ⏳ **미설정 → 대시보드 입력 + Redeploy 필요** (현재 `/health` ready:false) |
+| `AGENT_ACCESS_TOKEN` | 공개 URL 보호(앱·웹테스터가 같은 토큰 전송) | ⏳ 미설정 → 기존 값 `cf55…348174` 재사용 예정 |
+| `KWEATHER_API_KEY` | 케이웨더 날씨 | ⏳ 미설정 (넣고 **Redeploy** 시 kweather:true) |
 | `AGENT_MODEL` / `ENABLE_WEB_SEARCH` / `GROQ_API_KEY` | 선택 | 기본값 사용 |
+
+> 환경변수 입력 후 **Deployments → 최신 → ⋯ → Redeploy** 해야 반영됨. (Vercel MCP엔 env 설정 기능 없음 → 대시보드 수동.)
 
 **앱 `.env`** (`D:\Project\Multi-Modal Interface\.env`, gitignore됨):
 ```
-EXPO_PUBLIC_AGENT_ENDPOINT=https://mobile-ai-agent-tan.vercel.app/v1/agent/multimodal
-EXPO_PUBLIC_AGENT_ACCESS_TOKEN=<백엔드 AGENT_ACCESS_TOKEN 과 동일>
+EXPO_PUBLIC_AGENT_ENDPOINT=https://mobile-ai-agent-gray.vercel.app/v1/agent/multimodal
+EXPO_PUBLIC_AGENT_ACCESS_TOKEN=<백엔드 AGENT_ACCESS_TOKEN 과 동일 = cf55…348174>
 ```
 
 ---
@@ -118,17 +121,12 @@ npm start                # = expo start --port 8083  → QR 스캔(폰 Expo Go)
 
 ---
 
-## 7. ⚠️ 이전 전 반드시 할 일 — RN 앱 깃 연동
+## 7. ✅ 완료 — RN 앱 깃 연동
 
-`D:\Project\Multi-Modal Interface` 는 **아직 git 저장소가 아님(로컬 전용)**. 다른 머신/계정으로 옮기려면 GitHub에 올려야 한다. `.env`는 이미 .gitignore됨(토큰 안전).
-```powershell
-cd "D:\Project\Multi-Modal Interface"
-git init; git add -A
-git commit -m "모바일 AI 비서 앱 (Expo SDK 56)"
-# GitHub에 빈 repo 생성 후:
-git remote add origin https://github.com/aroundz-io/<repo>.git
-git branch -M main; git push -u origin main
-```
+`D:\Project\Multi-Modal Interface` 는 이제 **git 저장소** (`origin` = `wellbianlabs/mobile-ai-agent-app`, `main`). 초기 커밋 완료.
+- `.gitignore`에 추가됨: `/android/`(prebuild 산출물 ~3GB), `/ios/`, `*.apk`/`*.aab`(81MB APK), `SECRETS.local.md`/`*.local.md`. `.env`도 무시됨(토큰 안전).
+- ⚠️ `android/`는 무시되므로, 그 안에 **수동 네이티브 수정이 있었다면** config plugin(app.json)으로 옮기거나 선별 커밋해야 함. APK는 `npx expo run:android --variant release` 또는 EAS로 재생성.
+- push 인증: wellbianlabs PAT 필요(이 PC 자격증명엔 aroundz-io만). 1회성으로 `git -c credential.helper= push https://x-access-token:<PAT>@github.com/...` 사용 — **remote URL/config에 토큰 저장 금지**.
 
 ---
 
@@ -149,8 +147,9 @@ git branch -M main; git push -u origin main
 
 ## 9. 다음 작업 후보 (TODO)
 
+- [ ] **(우선) wellbianlabs Vercel 환경변수 입력** (`ANTHROPIC_API_KEY`, `AGENT_ACCESS_TOKEN`=cf55…348174) + Redeploy → `/health` `ready:true` 확인
 - [ ] **케이웨더 키** Vercel에 추가 + Redeploy → `/health`에 `"kweather":true`, `/v1/weather`가 `source:"KWeather"` 확인
-- [ ] RN 앱 GitHub 푸시(§7)
+- [x] RN 앱 GitHub 푸시(§7) — `wellbianlabs/mobile-ai-agent-app` 완료
 - [ ] 앱 답변에도 웹 테스터처럼 **마크다운/표 렌더링**(현재 텍스트). RN은 `react-native-markdown-display` 등 필요
 - [ ] **음성 입력**은 Expo Go 미지원(`expo-speech-recognition` 네이티브) → **개발 빌드/APK** 필요
 - [ ] 2단계 능동형(아침 날씨 브리핑/푸시 알림), 대화 메모리(이전 턴 맥락)
@@ -193,9 +192,9 @@ git branch -M main; git push -u origin main
 
 ```powershell
 # 백엔드 라이브 상태
-curl https://mobile-ai-agent-tan.vercel.app/health
+curl https://mobile-ai-agent-gray.vercel.app/health
 # 날씨(서울)
-curl "https://mobile-ai-agent-tan.vercel.app/v1/weather?lat=37.5665&lon=126.9780" -H "x-access-token: <TOKEN>"
+curl "https://mobile-ai-agent-gray.vercel.app/v1/weather?lat=37.5665&lon=126.9780" -H "x-access-token: <TOKEN>"
 # 앱 타입체크/번들
 cd "D:\Project\Multi-Modal Interface"; npm run typecheck
 ```
