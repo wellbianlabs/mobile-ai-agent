@@ -70,12 +70,12 @@
 > 실제 값은 같은 폴더의 **`SECRETS.local.md`** (gitignore됨) 참고. 공개 저장소엔 절대 넣지 말 것.
 
 **Vercel 프로젝트 환경변수** — wellbianlabs `mobile-ai-agent` (Settings → Environment Variables, Production):
-| 변수 | 용도 | 상태(2026-06-16, 신규 wellbianlabs 프로젝트) |
+| 변수 | 용도 | 상태(2026-06-17 검증, wellbianlabs 프로젝트) |
 |---|---|---|
-| `ANTHROPIC_API_KEY` | Claude API | ⏳ **미설정 → 대시보드 입력 + Redeploy 필요** (현재 `/health` ready:false) |
-| `AGENT_ACCESS_TOKEN` | 공개 URL 보호(앱·웹테스터가 같은 토큰 전송) | ⏳ 미설정 → 기존 값 `cf55…348174` 재사용 예정 |
-| `KWEATHER_API_KEY` | 케이웨더 날씨 | ⏳ 미설정 (넣고 **Redeploy** 시 kweather:true) |
-| `AGENT_MODEL` / `ENABLE_WEB_SEARCH` / `GROQ_API_KEY` | 선택 | 기본값 사용 |
+| `ANTHROPIC_API_KEY` | Claude API | ✅ **설정됨** (`/health` ready:true 확인) |
+| `AGENT_ACCESS_TOKEN` | 공개 URL 보호(앱·웹테스터가 같은 토큰 전송) | ✅ 설정됨 (`cf55…348174`, accessProtected:true) |
+| `KWEATHER_API_KEY` | 케이웨더 날씨 | ✅ 설정됨 (`/health` kweather:true, `/v1/weather` source:"KWeather" 확인) |
+| `AGENT_MODEL` / `ENABLE_WEB_SEARCH` / `GROQ_API_KEY` | 선택 | 기본값 사용 (webSearch:true, serverStt:false) |
 
 > 환경변수 입력 후 **Deployments → 최신 → ⋯ → Redeploy** 해야 반영됨. (Vercel MCP엔 env 설정 기능 없음 → 대시보드 수동.)
 
@@ -146,12 +146,13 @@ npm start                # = expo start --port 8083  → QR 스캔(폰 Expo Go)
 
 ## 9. 다음 작업 후보 (TODO)
 
-- [ ] **(우선) wellbianlabs Vercel 환경변수 입력** (`ANTHROPIC_API_KEY`, `AGENT_ACCESS_TOKEN`=cf55…348174) + Redeploy → `/health` `ready:true` 확인
-- [ ] **케이웨더 키** Vercel에 추가 + Redeploy → `/health`에 `"kweather":true`, `/v1/weather`가 `source:"KWeather"` 확인
+- [x] **wellbianlabs Vercel 환경변수 입력** (`ANTHROPIC_API_KEY`, `AGENT_ACCESS_TOKEN`=cf55…348174) + Redeploy → `/health` `ready:true` 확인 (2026-06-17 완료)
+- [x] **케이웨더 키** Vercel에 추가 + Redeploy → `/health` `"kweather":true`, `/v1/weather` `source:"KWeather"` 확인 (2026-06-17 완료)
 - [x] RN 앱 GitHub 푸시(§7) — `wellbianlabs/mobile-ai-agent-app` 완료
-- [ ] 앱 답변에도 웹 테스터처럼 **마크다운/표 렌더링**(현재 텍스트). RN은 `react-native-markdown-display` 등 필요
+- [x] 앱 답변 **마크다운/표 렌더링** (2026-06-17). `src/components/Markdown.tsx` — 의존성 없는 자체 렌더러(React 19/RN 0.85 peer-dep 회피). ⚠️ **커밋만 로컬**(`44a694c`), 푸시는 wellbianlabs PAT 필요
+- [x] **대화 메모리(이전 턴 맥락)** (2026-06-17). 와이어 계약에 `history`(텍스트만) 추가 — 앱은 최근 6턴, 백엔드는 12메시지 상한·user 시작 보장. ⚠️ 백엔드 `f95f4cd`/앱 `b58172c` **로컬 커밋만**, 배포(push)는 PAT 필요
 - [ ] **음성 입력**은 Expo Go 미지원(`expo-speech-recognition` 네이티브) → **개발 빌드/APK** 필요
-- [ ] 2단계 능동형(아침 날씨 브리핑/푸시 알림), 대화 메모리(이전 턴 맥락)
+- [ ] 2단계 능동형(아침 날씨 브리핑/푸시 알림)
 - [ ] 정식 릴리스 서명키 + 앱 아이콘/스플래시
 
 ---
