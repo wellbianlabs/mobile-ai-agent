@@ -1,6 +1,7 @@
 import type { Request } from 'express';
 
 import type {
+  ConversationMessage,
   IMobileAgentUnifiedPayload,
   NormalizedAudio,
   NormalizedImage,
@@ -21,8 +22,29 @@ import type {
 const ALLOWED_IMAGE_MIME = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
 const MAX_IMAGES = 6;
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024; // Claude 이미지 권장 상한 여유.
+const MAX_HISTORY_MESSAGES = 12; // user/assistant 합산 상한(≈6턴). 컨텍스트 폭주 방지.
+const MAX_HISTORY_CHARS = 4000; // 메시지 1건 길이 상한.
 
 type MulterFile = Express.Multer.File;
+
+/** 클라이언트가 보낸 history 를 검증·정규화한다(역할/텍스트 확인, 길이 제한). */
+function normalizeHistory(raw: unknown): ConversationMessage[] {
+  if (!Array.isArray(raw)) return [];
+  const out: ConversationMessage[] = [];
+  for (const item of raw) {
+    if (!item || typeof item !== 'object') continue;
+    const role = (item as { role?: unknown }).role;
+    const text = (item as { text?: unknown }).text;
+    if ((role === 'user' || role === 'assistant') && typeof text === 'string' && text.trim()) {
+      out.push({ role, text: text.trim().slice(0, MAX_HISTORY_CHARS) });
+    }
+  }
+  // 최신 N개만 유지. Claude 는 user 로 시작하는 교차 배열을 요구하므로,
+  // 선두가 assistant 면 잘라내 user 로 시작하도록 맞춘다.
+  const tail = out.slice(-MAX_HISTORY_MESSAGES);
+  while (tail[0]?.role === 'assistant') tail.shift();
+  return tail;
+}
 
 function filesByField(req: Request): Map<string, MulterFile[]> {
   const map = new Map<string, MulterFile[]>();
@@ -92,5 +114,6 @@ export function parseUnifiedRequest(req: Request): NormalizedInput {
     images,
     audio,
     meta: wire.meta,
+    history: normalizeHistory(wire.history),
   };
 }

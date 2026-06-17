@@ -6,6 +6,12 @@
 export type DeviceKind = 'iOS' | 'Android';
 export type NetworkType = 'WiFi' | '5G' | 'LTE';
 
+/** 멀티턴 메모리용 직전 대화 메시지(텍스트만). 바이너리는 재전송하지 않는다. */
+export interface ConversationMessage {
+  role: 'user' | 'assistant';
+  text: string;
+}
+
 export interface IMobileAgentUnifiedPayload {
   meta: {
     device: DeviceKind;
@@ -35,6 +41,8 @@ export interface IMobileAgentUnifiedPayload {
       fileName: string;
     }>;
   };
+  /** 직전 대화 맥락(텍스트만, 오래된→최신 순). 멀티턴 메모리. 선택. */
+  history?: ConversationMessage[];
 }
 
 /** 백엔드 → 프론트 응답. 프론트 AgentResponse 와 호환(ok/requestId/message). */
@@ -75,4 +83,6 @@ export interface NormalizedInput {
   images: NormalizedImage[];
   audio: NormalizedAudio | null;
   meta: IMobileAgentUnifiedPayload['meta'];
+  /** 직전 대화 맥락(텍스트만, 오래된→최신 순). 멀티턴 메모리. */
+  history: ConversationMessage[];
 }

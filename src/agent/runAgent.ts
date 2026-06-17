@@ -99,7 +99,14 @@ export async function runAgent(input: NormalizedInput): Promise<Omit<AgentRespon
   const nowISO = new Date().toISOString();
   const system = buildSystemPrompt(input.meta, nowISO);
 
+  // 직전 대화 맥락(텍스트만)을 현재 입력 앞에 펼쳐 멀티턴 메모리를 구성.
+  const history: Anthropic.MessageParam[] = input.history.map((m) => ({
+    role: m.role,
+    content: m.text,
+  }));
+
   const messages: Anthropic.MessageParam[] = [
+    ...history,
     { role: 'user', content: buildUserContent(input, transcript) },
   ];
 
