@@ -151,9 +151,23 @@ npm start                # = expo start --port 8083  → QR 스캔(폰 Expo Go)
 - [x] RN 앱 GitHub 푸시(§7) — `wellbianlabs/mobile-ai-agent-app` 완료
 - [x] 앱 답변 **마크다운/표 렌더링** (2026-06-17). `src/components/Markdown.tsx` — 의존성 없는 자체 렌더러(React 19/RN 0.85 peer-dep 회피). 앱 `44a694c` **푸시 완료**
 - [x] **대화 메모리(이전 턴 맥락)** (2026-06-17). 와이어 계약에 `history`(텍스트만) 추가 — 앱은 최근 6턴, 백엔드는 12메시지 상한·user 시작 보장. 백엔드 `b7e0189`/앱 `b58172c` **푸시 완료 → Vercel 배포(dpl_5P2e…) READY**, 라이브에서 멀티턴 기억 검증 완료(history "민수" → "민수")
-- [ ] **음성 입력**은 Expo Go 미지원(`expo-speech-recognition` 네이티브) → **개발 빌드/APK** 필요
-- [ ] 2단계 능동형(아침 날씨 브리핑/푸시 알림)
-- [ ] 정식 릴리스 서명키 + 앱 아이콘/스플래시
+- [x] **앱 아이콘/스플래시** (2026-06-18). `assets/`(아이콘·어댑티브·스플래시·파비콘) + `scripts/gen_assets.py`(Pillow 생성기) + app.json 연결. 앱 `로컬 커밋, 푸시 대기`
+- [x] **정식 릴리스 서명키 + EAS 파이프라인** (2026-06-18). `release.keystore`(alias `multimodal-release`, keytool, **gitignore**·자격증명은 앱 `SECRETS.local.md`) + `eas.json`(development/preview=APK, production=aab)
+- [x] **2단계 능동형 — 아침 날씨 브리핑(로컬 알림)** (2026-06-18). `src/services/notifications.ts` + `src/hooks/useMorningBriefing.ts` + WeatherHero 벨 토글(매일 07:30, 앱오픈마다 최신 헤드라인 재예약). ⚠️ **런타임은 개발 빌드 필요**(expo-notifications SDK53+ Expo Go 미지원). typecheck+export 검증 완료, 로컬 커밋·푸시 대기
+- [~] **음성 입력** — 코드(`useVoiceSearch.ts`)는 완성·정상. Expo Go 미지원이라 **개발 빌드/APK 빌드만 하면 동작**(아래 §12)
+- [ ] (선택) 브리핑 시각 설정 UI, 동적 콘텐츠용 백그라운드 fetch/백엔드 푸시
+
+> ⚠️ **앱 레포 미푸시 커밋 존재**: 아이콘/스플래시·EAS·아침 브리핑 작업이 로컬 커밋만 됨(`git log` 확인). wellbianlabs PAT로 push 필요(§7). 백엔드 레포는 최신까지 push 완료.
+
+### §12. 개발 빌드(음성·알림 활성화) — EAS
+이 PC는 Android SDK/에뮬레이터 없음 → **EAS 클라우드 빌드** 권장.
+```powershell
+cd "D:\Project\Multi-Modal Interface"
+npx eas-cli login            # Expo 계정 필요
+npx eas-cli build --platform android --profile preview   # 설치형 APK(내부배포)
+# 서명: EAS 매니지드(자동) 또는 `npx eas-cli credentials`로 release.keystore 업로드
+```
+빌드 APK를 폰에 설치하면 **음성 입력 + 아침 브리핑 알림**이 동작한다(Expo Go에선 미동작).
 
 ---
 
