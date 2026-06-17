@@ -149,8 +149,8 @@ npm start                # = expo start --port 8083  → QR 스캔(폰 Expo Go)
 - [x] **wellbianlabs Vercel 환경변수 입력** (`ANTHROPIC_API_KEY`, `AGENT_ACCESS_TOKEN`=cf55…348174) + Redeploy → `/health` `ready:true` 확인 (2026-06-17 완료)
 - [x] **케이웨더 키** Vercel에 추가 + Redeploy → `/health` `"kweather":true`, `/v1/weather` `source:"KWeather"` 확인 (2026-06-17 완료)
 - [x] RN 앱 GitHub 푸시(§7) — `wellbianlabs/mobile-ai-agent-app` 완료
-- [x] 앱 답변 **마크다운/표 렌더링** (2026-06-17). `src/components/Markdown.tsx` — 의존성 없는 자체 렌더러(React 19/RN 0.85 peer-dep 회피). ⚠️ **커밋만 로컬**(`44a694c`), 푸시는 wellbianlabs PAT 필요
-- [x] **대화 메모리(이전 턴 맥락)** (2026-06-17). 와이어 계약에 `history`(텍스트만) 추가 — 앱은 최근 6턴, 백엔드는 12메시지 상한·user 시작 보장. ⚠️ 백엔드 `f95f4cd`/앱 `b58172c` **로컬 커밋만**, 배포(push)는 PAT 필요
+- [x] 앱 답변 **마크다운/표 렌더링** (2026-06-17). `src/components/Markdown.tsx` — 의존성 없는 자체 렌더러(React 19/RN 0.85 peer-dep 회피). 앱 `44a694c` **푸시 완료**
+- [x] **대화 메모리(이전 턴 맥락)** (2026-06-17). 와이어 계약에 `history`(텍스트만) 추가 — 앱은 최근 6턴, 백엔드는 12메시지 상한·user 시작 보장. 백엔드 `b7e0189`/앱 `b58172c` **푸시 완료 → Vercel 배포(dpl_5P2e…) READY**, 라이브에서 멀티턴 기억 검증 완료(history "민수" → "민수")
 - [ ] **음성 입력**은 Expo Go 미지원(`expo-speech-recognition` 네이티브) → **개발 빌드/APK** 필요
 - [ ] 2단계 능동형(아침 날씨 브리핑/푸시 알림)
 - [ ] 정식 릴리스 서명키 + 앱 아이콘/스플래시
