@@ -154,8 +154,9 @@ npm start                # = expo start --port 8083  → QR 스캔(폰 Expo Go)
 - [x] **앱 아이콘/스플래시** (2026-06-18). `assets/`(아이콘·어댑티브·스플래시·파비콘) + `scripts/gen_assets.py`(Pillow 생성기) + app.json 연결. 앱 `로컬 커밋, 푸시 대기`
 - [x] **정식 릴리스 서명키 + EAS 파이프라인** (2026-06-18). `release.keystore`(alias `multimodal-release`, keytool, **gitignore**·자격증명은 앱 `SECRETS.local.md`) + `eas.json`(development/preview=APK, production=aab)
 - [x] **2단계 능동형 — 아침 날씨 브리핑(로컬 알림)** (2026-06-18). `src/services/notifications.ts` + `src/hooks/useMorningBriefing.ts` + WeatherHero 벨 토글(매일 07:30, 앱오픈마다 최신 헤드라인 재예약). ⚠️ **런타임은 개발 빌드 필요**(expo-notifications SDK53+ Expo Go 미지원). typecheck+export 검증 완료, 로컬 커밋·푸시 대기
+- [x] **브리핑 시각 설정 UI** (2026-06-18). `src/components/BriefingSettings.tsx` — 켜기/끄기 + 시/분 스테퍼 바텀시트(네이티브 피커 무의존, Expo Go 호환). 시각 영속·재예약. 앱 `c7fc8c8` 푸시 완료
 - [~] **음성 입력** — 코드(`useVoiceSearch.ts`)는 완성·정상. Expo Go 미지원이라 **개발 빌드/APK 빌드만 하면 동작**(아래 §12)
-- [ ] (선택) 브리핑 시각 설정 UI, 동적 콘텐츠용 백그라운드 fetch/백엔드 푸시
+- [ ] (선택) 알림 동적 콘텐츠 신선도 — 현재는 앱오픈 시 재예약. 며칠 미접속에도 신선하려면 **백엔드 푸시**(Expo push token + 서버 cron)가 정답. 백그라운드 fetch는 Android 신뢰성 낮아 비권장
 
 > ⚠️ **앱 레포 미푸시 커밋 존재**: 아이콘/스플래시·EAS·아침 브리핑 작업이 로컬 커밋만 됨(`git log` 확인). wellbianlabs PAT로 push 필요(§7). 백엔드 레포는 최신까지 push 완료.
 
