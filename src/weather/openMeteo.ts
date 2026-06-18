@@ -1,4 +1,4 @@
-import type { HourPoint, NormalizedCurrent, NormalizedToday } from './summary.js';
+import type { DayPoint, HourPoint, NormalizedCurrent, NormalizedToday } from './summary.js';
 
 /** Open-Meteo(무료·전지구) 좌표 기반 정규화 — 케이웨더 폴백/해외용. */
 
@@ -23,6 +23,50 @@ function isRainCode(code: number | undefined): boolean {
 export interface OpenMeteoNormalized {
   current: NormalizedCurrent;
   today: NormalizedToday;
+}
+
+/**
+ * 주간(일별) 예보 — 오늘부터 days일. Open-Meteo daily 사용(상태·강수확률 포함).
+ * 케이웨더 세계 7일(kw-world-7d)은 최고/최저+미공개 wIcon 뿐이라, 정보량 많은 이쪽을 쓴다.
+ */
+export async function openMeteoDaily(lat: number, lon: number, days = 7): Promise<DayPoint[]> {
+  const url = new URL('https://api.open-meteo.com/v1/forecast');
+  url.searchParams.set('latitude', String(lat));
+  url.searchParams.set('longitude', String(lon));
+  url.searchParams.set(
+    'daily',
+    'weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max',
+  );
+  url.searchParams.set('timezone', 'auto');
+  url.searchParams.set('forecast_days', String(days));
+
+  try {
+    const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
+    if (!res.ok) return [];
+    const data = (await res.json()) as { daily?: Record<string, Array<number | string>> };
+    const d = data.daily ?? {};
+    const dates = (d.time as string[] | undefined) ?? [];
+    const codes = (d.weather_code as number[] | undefined) ?? [];
+    const maxs = (d.temperature_2m_max as number[] | undefined) ?? [];
+    const mins = (d.temperature_2m_min as number[] | undefined) ?? [];
+    const pops = (d.precipitation_probability_max as number[] | undefined) ?? [];
+
+    const out: DayPoint[] = [];
+    for (let i = 0; i < dates.length; i++) {
+      const date = dates[i];
+      if (!date) continue;
+      out.push({
+        date,
+        maxC: typeof maxs[i] === 'number' ? Math.round(maxs[i] as number) : null,
+        minC: typeof mins[i] === 'number' ? Math.round(mins[i] as number) : null,
+        popPct: typeof pops[i] === 'number' ? (pops[i] as number) : null,
+        condition: describe(codes[i]),
+      });
+    }
+    return out;
+  } catch {
+    return [];
+  }
 }
 
 /**

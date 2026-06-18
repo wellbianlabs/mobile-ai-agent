@@ -132,6 +132,14 @@ export async function runWeather(input: {
           popPct: h.popPct,
           condition: h.condition,
         })),
+        // 주간(최대 7일) — "이번 주 날씨" 류 질문에 활용.
+        daily: dto.daily.map((d) => ({
+          date: d.date,
+          maxC: d.maxC,
+          minC: d.minC,
+          popPct: d.popPct,
+          condition: d.condition,
+        })),
         advice: dto.summary.advice,
       };
     }

@@ -1,6 +1,6 @@
 import { getKWeather } from './kweather.js';
 import { getKWeatherWorld } from './kweatherWorld.js';
-import { openMeteoByCoords, openMeteoHourly } from './openMeteo.js';
+import { openMeteoByCoords, openMeteoDaily, openMeteoHourly } from './openMeteo.js';
 import { buildSummary, type WeatherDTO } from './summary.js';
 
 /**
@@ -12,8 +12,12 @@ export async function weatherByCoords(
   lon: number,
   placeHint?: string,
 ): Promise<WeatherDTO | null> {
-  // 케이웨더 국내(현재·오늘)와 Open-Meteo 시간별을 병렬 조회.
-  const [kw, omHourly] = await Promise.all([getKWeather(lat, lon), openMeteoHourly(lat, lon)]);
+  // 케이웨더 국내(현재·오늘)와 Open-Meteo 시간별·주간을 병렬 조회.
+  const [kw, omHourly, daily] = await Promise.all([
+    getKWeather(lat, lon),
+    openMeteoHourly(lat, lon),
+    openMeteoDaily(lat, lon, 7),
+  ]);
 
   // 1) 케이웨더 — 한국(좌표 정밀). 시간별은 Open-Meteo 보강(국내 단기예보 근시간 공백 회피).
   if (kw) {
@@ -32,6 +36,7 @@ export async function weatherByCoords(
       current,
       today: kw.today,
       hourly: omHourly,
+      daily,
       summary: buildSummary(current, kw.today),
     };
   }
@@ -45,6 +50,7 @@ export async function weatherByCoords(
       current: world.current,
       today: world.today,
       hourly: world.hourly.length ? world.hourly : omHourly,
+      daily,
       summary: buildSummary(world.current, world.today),
     };
   }
@@ -58,6 +64,7 @@ export async function weatherByCoords(
       current: om.current,
       today: om.today,
       hourly: omHourly,
+      daily,
       summary: buildSummary(om.current, om.today),
     };
   }

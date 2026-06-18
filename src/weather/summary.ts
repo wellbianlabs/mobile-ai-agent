@@ -19,6 +19,17 @@ export interface NormalizedToday {
   precipProbabilityPct: number | null;
 }
 
+/** 주간(일별) 예보 한 포인트. */
+export interface DayPoint {
+  /** 로컬 날짜(YYYY-MM-DD). */
+  date: string;
+  maxC: number | null;
+  minC: number | null;
+  popPct: number | null;
+  /** 한국어 상태(맑음/비 등). */
+  condition: string;
+}
+
 /** 시간별 예보 한 포인트(Open-Meteo hourly 기반). */
 export interface HourPoint {
   /** 로컬 ISO 시각(예: "2026-06-18T15:00"). */
@@ -47,6 +58,8 @@ export interface WeatherDTO {
   today: NormalizedToday;
   /** 시간별 예보(현재 시각부터, Open-Meteo). 없으면 빈 배열. */
   hourly: HourPoint[];
+  /** 주간(일별) 예보. 없으면 빈 배열. */
+  daily: DayPoint[];
   summary: WeatherSummary;
 }
 
