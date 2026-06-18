@@ -125,6 +125,13 @@ export async function runWeather(input: {
           minC: dto.today.minC,
           precipProbabilityPct: dto.today.precipProbabilityPct,
         },
+        // 시간별(향후 12시간) — "오후에 비 와?" 같은 질문에 모델이 활용.
+        hourly: dto.hourly.slice(0, 12).map((h) => ({
+          time: h.time.slice(11, 16), // "HH:MM"
+          tempC: h.tempC,
+          popPct: h.popPct,
+          condition: h.condition,
+        })),
         advice: dto.summary.advice,
       };
     }

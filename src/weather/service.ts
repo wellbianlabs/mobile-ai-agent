@@ -1,5 +1,5 @@
 import { getKWeather } from './kweather.js';
-import { openMeteoByCoords } from './openMeteo.js';
+import { openMeteoByCoords, openMeteoHourly } from './openMeteo.js';
 import { buildSummary, type WeatherDTO } from './summary.js';
 
 /**
@@ -11,8 +11,10 @@ export async function weatherByCoords(
   lon: number,
   placeHint?: string,
 ): Promise<WeatherDTO | null> {
+  // 케이웨더(현재·오늘)와 시간별(Open-Meteo)을 병렬 조회 — 시간별은 소스 무관 일관 제공.
+  const [kw, hourly] = await Promise.all([getKWeather(lat, lon), openMeteoHourly(lat, lon)]);
+
   // 1) 케이웨더(키 있고 한국이면).
-  const kw = await getKWeather(lat, lon);
   if (kw) {
     const current = {
       temperatureC: kw.current.temperatureC,
@@ -28,6 +30,7 @@ export async function weatherByCoords(
       place: placeHint || kw.place,
       current,
       today: kw.today,
+      hourly,
       summary: buildSummary(current, kw.today),
     };
   }
@@ -40,6 +43,7 @@ export async function weatherByCoords(
       place: placeHint || '현재 위치',
       current: om.current,
       today: om.today,
+      hourly,
       summary: buildSummary(om.current, om.today),
     };
   }
