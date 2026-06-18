@@ -1,15 +1,16 @@
-# 핸드오프북 — 나만의 모바일 AI 비서
+# 핸드오프북 — wellbianAI (날씨를 전략자산으로 만드는 날씨 AI 에이전트)
 
 > 새 Claude 세션/계정이 이 문서만 읽고 작업을 이어갈 수 있도록 정리한 인수인계 노트.
-> 최종 업데이트: 2026-06-16 — **wellbianlabs 계정으로 이전 완료**(GitHub repo 신규 생성 + Vercel 재배포).
+> 최종 업데이트: 2026-06-18 — **브랜드 wellbianAI 적용** + 시간별/주간 7일/30일 장기전망 추가.
+> 계정: wellbianlabs(GitHub/Vercel). 표시명 wellbianAI, slug·번들ID는 유지(빌드 연속성).
 
 ---
 
 ## 0. 한 줄 요약
 
-멀티모달 입력 RN(Expo) 앱 + Claude tool-use 백엔드로 만든 **개인 모바일 AI 비서**.
-날씨(케이웨더/Open-Meteo)·웹검색·통역·이미지/음성 이해를 제공한다. 백엔드는 **Vercel에 배포 완료**,
-앱은 **Expo Go로 실기기 구동 중**.
+멀티모달 입력 RN(Expo) 앱 + Claude tool-use 백엔드로 만든 **wellbianAI — 날씨 AI 에이전트**.
+날씨(케이웨더 국내+세계, 현재·시간별·주간7일·30일전망 / Open-Meteo 보강)·웹검색·통역·이미지/음성 이해를 제공한다.
+백엔드는 **Vercel 배포 완료**, 앱은 **Expo Go 실기기 구동**(음성·알림은 개발 빌드 필요).
 
 ---
 
