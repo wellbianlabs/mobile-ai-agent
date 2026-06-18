@@ -118,7 +118,7 @@
 <body>
   <header>
     <h1>wellbianAI · 웹 테스터</h1>
-    <p class="tagline">날씨를 전략자산으로 만드는 날씨 AI 에이전트</p>
+    <p class="tagline">날씨를 비즈니스의 가장 확실한 전략 자산으로 · powered by KWeather</p>
     <div class="cfg">
       <input id="endpoint" type="text" placeholder="백엔드 엔드포인트" />
       <input id="token" type="text" placeholder="접근 토큰(설정 시)" style="min-width:140px" />
@@ -211,11 +211,11 @@ function renderMarkdown(md){
 function renderEmpty(){
   log.innerHTML = `<div class="empty">
     <div class="big">wellbianAI</div>
-    <p>날씨를 전략자산으로. 날씨와 산업·업무에 최적화된 매칭 인사이트를 추론해 안내하는 날씨 인텔리전스.</p>
+    <p>날씨를 비즈니스의 가장 확실한 전략 자산으로. 케이웨더 기반으로 날씨가 사업에 미치는 영향을 분석해 '다음 행동'을 처방하는 날씨 인텔리전스.</p>
     <div>
-      <span class="ex">이번 주 야외 행사하기 좋은 날은?</span>
-      <span class="ex">주말 등산·나들이 적기 추천해줘</span>
-      <span class="ex">물류 배송에 영향 줄 날씨 있어?</span>
+      <span class="ex">이번 주 야외 작업·공정 일정 어떻게 잡을까?</span>
+      <span class="ex">집중호우 대비 물류·배송 리스크 알려줘</span>
+      <span class="ex">주말 폭염, 식자재 발주량 어떻게 조정할까?</span>
     </div></div>`;
   log.querySelectorAll('.ex').forEach(e=>e.onclick=()=>{ $('text').value=e.textContent; $('text').focus(); });
 }
