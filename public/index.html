@@ -211,11 +211,11 @@ function renderMarkdown(md){
 function renderEmpty(){
   log.innerHTML = `<div class="empty">
     <div class="big">wellbianAI</div>
-    <p>날씨를 전략자산으로 만드는 날씨 AI 에이전트. 날씨·검색·번역을 도와드리고, 답이 표·목록으로 정리되어 나옵니다.</p>
+    <p>날씨를 전략자산으로. 날씨와 산업·업무에 최적화된 매칭 인사이트를 추론해 안내하는 날씨 인텔리전스.</p>
     <div>
-      <span class="ex">서울이랑 부산 주말 날씨 비교해줘</span>
-      <span class="ex">"맛있게 드세요" 일본어·영어로 번역</span>
-      <span class="ex">최신 아이폰 모델과 가격 표로</span>
+      <span class="ex">이번 주 야외 행사하기 좋은 날은?</span>
+      <span class="ex">주말 등산·나들이 적기 추천해줘</span>
+      <span class="ex">물류 배송에 영향 줄 날씨 있어?</span>
     </div></div>`;
   log.querySelectorAll('.ex').forEach(e=>e.onclick=()=>{ $('text').value=e.textContent; $('text').focus(); });
 }
