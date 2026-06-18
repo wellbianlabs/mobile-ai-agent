@@ -1,4 +1,5 @@
 import { getKWeather } from './kweather.js';
+import { getKWeatherWorld } from './kweatherWorld.js';
 import { openMeteoByCoords, openMeteoHourly } from './openMeteo.js';
 import { buildSummary, type WeatherDTO } from './summary.js';
 
@@ -11,10 +12,10 @@ export async function weatherByCoords(
   lon: number,
   placeHint?: string,
 ): Promise<WeatherDTO | null> {
-  // 케이웨더(현재·오늘)와 시간별(Open-Meteo)을 병렬 조회 — 시간별은 소스 무관 일관 제공.
-  const [kw, hourly] = await Promise.all([getKWeather(lat, lon), openMeteoHourly(lat, lon)]);
+  // 케이웨더 국내(현재·오늘)와 Open-Meteo 시간별을 병렬 조회.
+  const [kw, omHourly] = await Promise.all([getKWeather(lat, lon), openMeteoHourly(lat, lon)]);
 
-  // 1) 케이웨더(키 있고 한국이면).
+  // 1) 케이웨더 — 한국(좌표 정밀). 시간별은 Open-Meteo 보강(국내 단기예보 근시간 공백 회피).
   if (kw) {
     const current = {
       temperatureC: kw.current.temperatureC,
@@ -30,12 +31,25 @@ export async function weatherByCoords(
       place: placeHint || kw.place,
       current,
       today: kw.today,
-      hourly,
+      hourly: omHourly,
       summary: buildSummary(current, kw.today),
     };
   }
 
-  // 2) Open-Meteo 폴백.
+  // 2) 케이웨더 세계 — 해외(최근접 도시 + kw-world 실황/시간별). 현재·오늘·시간별 모두 케이웨더.
+  const world = await getKWeatherWorld(lat, lon);
+  if (world) {
+    return {
+      source: 'KWeather',
+      place: placeHint || world.place,
+      current: world.current,
+      today: world.today,
+      hourly: world.hourly.length ? world.hourly : omHourly,
+      summary: buildSummary(world.current, world.today),
+    };
+  }
+
+  // 3) Open-Meteo 폴백(케이웨더 국내·세계 모두 실패 시).
   const om = await openMeteoByCoords(lat, lon);
   if (om) {
     return {
@@ -43,7 +57,7 @@ export async function weatherByCoords(
       place: placeHint || '현재 위치',
       current: om.current,
       today: om.today,
-      hourly,
+      hourly: omHourly,
       summary: buildSummary(om.current, om.today),
     };
   }
