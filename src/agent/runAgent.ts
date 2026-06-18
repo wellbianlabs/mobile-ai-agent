@@ -58,6 +58,23 @@ interface Citation {
   url: string;
 }
 
+/** 심층 분석을 시사하는 키워드(프리미엄 모델 라우팅용). */
+const COMPLEX_KW =
+  /(분석|전략|리스크|발주|재고|시나리오|비교|예측|영향|최적|왜|어떻게|계획|매출|공정|안전|손실|대응|insight)/;
+
+/**
+ * 능동 모델 라우팅 — 요청 성격에 맞춰 모델을 고른다.
+ *  - 자동 전략 브리핑(빈번·짧음) → 경량(Sonnet).
+ *  - 멀티모달(이미지)·긴 질문·전략/분석 키워드 → 프리미엄(Opus).
+ *  - 인사·단답·단순 조회 → 경량(Sonnet).
+ */
+function pickModel(input: NormalizedInput): string {
+  const t = (input.text ?? '').trim();
+  if (t.startsWith('[자동 전략 브리핑]')) return config.modelFast;
+  if (input.images.length > 0 || t.length > 40 || COMPLEX_KW.test(t)) return config.model;
+  return config.modelFast;
+}
+
 /** 응답 content 블록들에서 최종 텍스트와 웹검색 인용을 수집. */
 function harvest(content: Anthropic.ContentBlock[]): { text: string; citations: Citation[] } {
   let text = '';
@@ -98,6 +115,7 @@ export async function runAgent(input: NormalizedInput): Promise<Omit<AgentRespon
 
   const nowISO = new Date().toISOString();
   const system = buildSystemPrompt(input.meta, nowISO);
+  const model = pickModel(input); // 능동 라우팅
 
   // 직전 대화 맥락(텍스트만)을 현재 입력 앞에 펼쳐 멀티턴 메모리를 구성.
   const history: Anthropic.MessageParam[] = input.history.map((m) => ({
@@ -116,7 +134,7 @@ export async function runAgent(input: NormalizedInput): Promise<Omit<AgentRespon
 
   for (let turn = 0; turn < config.maxAgentTurns; turn++) {
     const res = await client.messages.create({
-      model: config.model,
+      model,
       max_tokens: config.maxTokens,
       system,
       tools,

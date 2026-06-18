@@ -21,8 +21,11 @@ export const config = {
   /** Claude API 키. 없으면 기동은 되지만 /v1/agent 호출 시 503. */
   anthropicApiKey: process.env.ANTHROPIC_API_KEY ?? '',
 
-  /** 두뇌 모델 — 최상위급(Opus). 케이웨더 영업 파트너급 품질 목표. */
+  /** 프리미엄 두뇌 — 최상위급(Opus). 심층 전략 분석·멀티모달에 사용. */
   model: process.env.AGENT_MODEL ?? 'claude-opus-4-8',
+
+  /** 경량 두뇌 — 빠른 모델(Sonnet). 자동 브리핑·단순 질의에 사용(능동 라우팅). */
+  modelFast: process.env.AGENT_MODEL_FAST ?? 'claude-sonnet-4-6',
 
   /** 근거(논문·통계·표) 포함 풍부한 답변 위해 상향. */
   maxTokens: int(process.env.AGENT_MAX_TOKENS, 4096),

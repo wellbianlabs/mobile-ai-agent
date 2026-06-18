@@ -39,6 +39,7 @@ export function createApp(): Express {
       ready: ready.ok,
       reason: ready.reason,
       model: config.model,
+      modelFast: config.modelFast,
       webSearch: config.enableWebSearch,
       serverStt: Boolean(config.groqApiKey),
       accessProtected: Boolean(config.accessToken),
