@@ -135,6 +135,7 @@ npm start                # = expo start --port 8083  → QR 스캔(폰 Expo Go)
 - ✅ 케이웨더 연동(한국 좌표 정밀, 해외 Open-Meteo 폴백). `KWEATHER_API_KEY`만 Vercel에 넣고 Redeploy하면 활성(현재는 Open-Meteo 폴백 중)
 - ✅ 앱: 권한 온보딩(1회) → 날씨 히어로(시간대·날씨 반응형 하늘 배경, 구름 애니메이션) → 대화화면(라이트 테마)
 - ✅ 현재 위치 날씨 즉시 표시 + "날씨" 질의 시 현재 위치 기본값
+- ✅ **시간별 예보**(2026-06-18) — DTO `hourly`(현재 시각부터 24h). 현재·오늘=케이웨더, 시간별=Open-Meteo 보강(하이브리드). 앱 히어로 가로 스트립 + 에이전트 챗 표 답변. 라이브 검증 완료
 - ✅ 입력창: 텍스트+갤러리·촬영·음성 아이콘(입력창 내부)+전송, 키보드 회피
 - ✅ Expo SDK 52 → **56** 업그레이드 + deprecation 경고 정리(pointerEvents/SafeAreaView/ImageManipulator/getInfoAsync/MediaTypeOptions)
 
