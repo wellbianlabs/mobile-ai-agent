@@ -46,5 +46,8 @@ export function buildSystemPrompt(meta: IMobileAgentUnifiedPayload['meta'], nowI
           meta.coords ? ` (lat ${meta.coords.lat.toFixed(4)}, lon ${meta.coords.lon.toFixed(4)})` : ''
         } — 위치 미지정 질의의 기본값으로 사용`
       : '- 현재 위치: 알 수 없음(위치 권한 없음). 위치 기반 질문은 사용자에게 지역을 한 번 물어봅니다.',
+    meta.industry && meta.industry !== '일반'
+      ? `- 사용자 업종: ${meta.industry} — 모든 날씨 분석·처방을 이 업종의 관점(작업·공정·재고·발주·안전·매출 영향)으로 구체화합니다.`
+      : '- 사용자 업종: 미지정/일반 — 필요하면 업종을 한 번 물어 맞춤화하되, 강요하지 않습니다.',
   ].join('\n');
 }

@@ -24,6 +24,8 @@ export interface IMobileAgentUnifiedPayload {
     place?: string | null;
     /** 현재 위치 좌표. weather 도구에 정밀 전달용. */
     coords?: { lat: number; lon: number };
+    /** 사용자 업종(산업군 라벨). 답변을 그 업종 관점으로 처방. */
+    industry?: string;
   };
   inputs: {
     text: string;
