@@ -21,13 +21,14 @@ export const config = {
   /** Claude API 키. 없으면 기동은 되지만 /v1/agent 호출 시 503. */
   anthropicApiKey: process.env.ANTHROPIC_API_KEY ?? '',
 
-  /** 비서 두뇌 모델. */
-  model: process.env.AGENT_MODEL ?? 'claude-sonnet-4-6',
+  /** 두뇌 모델 — 최상위급(Opus). 케이웨더 영업 파트너급 품질 목표. */
+  model: process.env.AGENT_MODEL ?? 'claude-opus-4-8',
 
-  maxTokens: int(process.env.AGENT_MAX_TOKENS, 1536),
+  /** 근거(논문·통계·표) 포함 풍부한 답변 위해 상향. */
+  maxTokens: int(process.env.AGENT_MAX_TOKENS, 4096),
 
-  /** tool-use 루프 안전 상한. */
-  maxAgentTurns: int(process.env.MAX_AGENT_TURNS, 6),
+  /** tool-use 루프 안전 상한(웹검색 근거 수집 여유). */
+  maxAgentTurns: int(process.env.MAX_AGENT_TURNS, 8),
 
   /** Claude 네이티브 웹검색 도구 활성화. */
   enableWebSearch: bool(process.env.ENABLE_WEB_SEARCH, true),
