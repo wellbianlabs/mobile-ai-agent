@@ -167,6 +167,18 @@ export async function runAgent(input: NormalizedInput): Promise<Omit<AgentRespon
     break;
   }
 
+  // 후속 탭 제안 추출: 맨 끝 "<<SUGGEST>> a || b || c" 를 분리하고 본문에서 제거.
+  let suggestions: string[] = [];
+  const sm = finalText.match(/<<SUGGEST>>([\s\S]*)$/);
+  if (sm && sm.index !== undefined) {
+    suggestions = (sm[1] ?? '')
+      .split(/\|\||\n/)
+      .map((s) => s.replace(/^[-•\d.\s"]+|["\s]+$/g, '').trim())
+      .filter(Boolean)
+      .slice(0, 4);
+    finalText = finalText.slice(0, sm.index).trim();
+  }
+
   if (!finalText) {
     finalText = '죄송해요, 답변을 생성하지 못했어요. 잠시 후 다시 시도해 주세요.';
   }
@@ -175,6 +187,7 @@ export async function runAgent(input: NormalizedInput): Promise<Omit<AgentRespon
     message: finalText,
     toolsUsed: [...toolsUsed],
     citations,
+    suggestions,
     ...(transcript ? { transcript } : {}),
   };
 }
