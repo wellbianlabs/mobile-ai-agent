@@ -60,6 +60,10 @@ export interface WeatherDTO {
   hourly: HourPoint[];
   /** 주간(일별) 예보. 없으면 빈 배열. */
   daily: DayPoint[];
+  /** 30일 장기전망(케이웨더, 국내 권역 단위). 없으면 빈 배열. */
+  monthly: DayPoint[];
+  /** 30일 전망의 권역명(예: "수도권"). 해외/미지원 시 null. */
+  monthlyRegion: string | null;
   summary: WeatherSummary;
 }
 
