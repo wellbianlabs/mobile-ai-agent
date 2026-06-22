@@ -107,7 +107,9 @@ export async function runWeather(input: {
 
   // 현재 위치(좌표) → 케이웨더 우선 통합 조회.
   if (typeof input.latitude === 'number' && typeof input.longitude === 'number') {
-    const dto = await weatherByCoords(input.latitude, input.longitude, location || undefined);
+    const dto = await weatherByCoords(input.latitude, input.longitude, location || undefined, {
+      includePast: true,
+    });
     if (dto) {
       return {
         source: dto.source, // "KWeather" | "Open-Meteo"
@@ -140,6 +142,8 @@ export async function runWeather(input: {
           popPct: d.popPct,
           condition: d.condition,
         })),
+        // 과거 오늘·예년 평균(기상청 ASOS, 국내) — "예년 대비" 비교·분석에 활용.
+        pastToday: dto.pastToday,
         advice: dto.summary.advice,
       };
     }

@@ -48,6 +48,13 @@ export const config = {
   kweatherBase: process.env.KWEATHER_BASE ?? 'https://gateway.kweather.co.kr:8443/weather',
 
   /**
+   * 기상청 API허브(apihub.kma.go.kr) authKey. 설정 시 한국 좌표의 ASOS 과거관측을
+   * 끌어와 "과거 오늘·예년 평균"을 제공한다(에이전트 분석 경로에서만 조회·서버 캐시).
+   */
+  kmaApiKey: process.env.KMA_API_KEY ?? '',
+  kmaApiBase: process.env.KMA_API_BASE ?? 'https://apihub.kma.go.kr/api/typ01/url',
+
+  /**
    * 선택적 접근 토큰. 설정하면 /v1/agent 호출 시 x-access-token 헤더(또는 ?token=)가
    * 일치해야 한다. 공개 배포(Vercel) URL 에서 API 키 비용 남용을 막는 용도.
    */

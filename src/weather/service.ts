@@ -1,5 +1,6 @@
 import { getKWeather } from './kweather.js';
 import { getKWeather30d } from './kweather30d.js';
+import { getKmaPastToday } from './kma.js';
 import { getKWeatherWorld } from './kweatherWorld.js';
 import { openMeteoByCoords, openMeteoDaily, openMeteoHourly } from './openMeteo.js';
 import { buildSummary, type WeatherDTO } from './summary.js';
@@ -12,13 +13,15 @@ export async function weatherByCoords(
   lat: number,
   lon: number,
   placeHint?: string,
+  opts?: { includePast?: boolean },
 ): Promise<WeatherDTO | null> {
-  // 케이웨더 국내(현재·오늘)와 Open-Meteo 시간별·주간, 케이웨더 30일 전망을 병렬 조회.
-  const [kw, omHourly, daily, monthly30] = await Promise.all([
+  // 케이웨더 국내·Open-Meteo 시간별/주간·30일 전망, (분석 경로면) 기상청 과거관측을 병렬 조회.
+  const [kw, omHourly, daily, monthly30, pastToday] = await Promise.all([
     getKWeather(lat, lon),
     openMeteoHourly(lat, lon),
     openMeteoDaily(lat, lon, 7),
     getKWeather30d(lat, lon),
+    opts?.includePast ? getKmaPastToday(lat, lon) : Promise.resolve(null),
   ]);
   const monthly = monthly30?.days ?? [];
   const monthlyRegion = monthly30?.region ?? null;
@@ -43,6 +46,7 @@ export async function weatherByCoords(
       daily,
       monthly,
       monthlyRegion,
+      pastToday,
       summary: buildSummary(current, kw.today),
     };
   }
@@ -59,6 +63,7 @@ export async function weatherByCoords(
       daily,
       monthly, // 해외는 [](30일은 국내만)
       monthlyRegion,
+      pastToday,
       summary: buildSummary(world.current, world.today),
     };
   }
@@ -75,6 +80,7 @@ export async function weatherByCoords(
       daily,
       monthly,
       monthlyRegion,
+      pastToday,
       summary: buildSummary(om.current, om.today),
     };
   }

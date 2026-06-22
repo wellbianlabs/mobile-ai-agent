@@ -64,6 +64,8 @@ export interface WeatherDTO {
   monthly: DayPoint[];
   /** 30일 전망의 권역명(예: "수도권"). 해외/미지원 시 null. */
   monthlyRegion: string | null;
+  /** 과거 오늘·예년 평균(기상청 ASOS, 국내·분석 경로에서만). 없으면 null. */
+  pastToday: import('./kma.js').PastToday | null;
   summary: WeatherSummary;
 }
 
