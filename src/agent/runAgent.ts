@@ -22,6 +22,32 @@ function imageMediaType(mime: string): 'image/jpeg' | 'image/png' | 'image/webp'
   }
 }
 
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/** 과부하(529)/5xx 시 재시도, 프리미엄 모델이 계속 과부하면 경량 모델로 강등. */
+async function createResilient(
+  model: string,
+  params: Omit<Anthropic.MessageCreateParamsNonStreaming, 'model'>,
+): Promise<Anthropic.Message> {
+  let current = model;
+  for (let attempt = 0; attempt < 4; attempt++) {
+    try {
+      return await client.messages.create({ model: current, ...params });
+    } catch (err) {
+      const status = (err as { status?: number })?.status;
+      const transient = status === 529 || status === 503 || status === 500 || status === 429;
+      if (!transient || attempt === 3) throw err;
+      // 한 번 재시도 후에도 프리미엄이 과부하면 경량 모델로 강등.
+      if (attempt >= 1 && current === config.model && config.modelFast !== config.model) {
+        current = config.modelFast;
+      }
+      await sleep(900 * (attempt + 1));
+    }
+  }
+  // 도달 불가(루프에서 return/throw). 타입 만족용.
+  return client.messages.create({ model: current, ...params });
+}
+
 /** 정규화 입력 → 첫 user 메시지 content 블록. */
 function buildUserContent(
   input: NormalizedInput,
@@ -133,8 +159,7 @@ export async function runAgent(input: NormalizedInput): Promise<Omit<AgentRespon
   let citations: Citation[] = [];
 
   for (let turn = 0; turn < config.maxAgentTurns; turn++) {
-    const res = await client.messages.create({
-      model,
+    const res = await createResilient(model, {
       max_tokens: config.maxTokens,
       system,
       tools,
