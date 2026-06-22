@@ -144,6 +144,8 @@ export async function runWeather(input: {
         })),
         // 과거 오늘·예년 평균(기상청 ASOS, 국내) — "예년 대비" 비교·분석에 활용.
         pastToday: dto.pastToday,
+        // 해양 기상(파고·주기·너울, m/s) — 조업·출항·하역·양식 등 해양 대응에 활용.
+        marine: dto.marine,
         advice: dto.summary.advice,
       };
     }

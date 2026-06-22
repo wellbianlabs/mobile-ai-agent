@@ -66,6 +66,8 @@ export interface WeatherDTO {
   monthlyRegion: string | null;
   /** 과거 오늘·예년 평균(기상청 ASOS, 국내·분석 경로에서만). 없으면 null. */
   pastToday: import('./kma.js').PastToday | null;
+  /** 해양 기상(파고·주기·너울). 해안/해상 좌표·분석 경로에서만. 내륙은 null. */
+  marine: import('./marine.js').Marine | null;
   summary: WeatherSummary;
 }
 
