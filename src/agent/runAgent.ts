@@ -30,18 +30,18 @@ async function createResilient(
   params: Omit<Anthropic.MessageCreateParamsNonStreaming, 'model'>,
 ): Promise<Anthropic.Message> {
   let current = model;
-  for (let attempt = 0; attempt < 4; attempt++) {
+  for (let attempt = 0; attempt < 3; attempt++) {
     try {
       return await client.messages.create({ model: current, ...params });
     } catch (err) {
       const status = (err as { status?: number })?.status;
       const transient = status === 529 || status === 503 || status === 500 || status === 429;
-      if (!transient || attempt === 3) throw err;
-      // 한 번 재시도 후에도 프리미엄이 과부하면 경량 모델로 강등.
-      if (attempt >= 1 && current === config.model && config.modelFast !== config.model) {
+      if (!transient || attempt === 2) throw err;
+      // 과부하면 곧바로 경량 모델로 강등해 시간 예산(서버 60s) 보호.
+      if (current === config.model && config.modelFast !== config.model) {
         current = config.modelFast;
       }
-      await sleep(900 * (attempt + 1));
+      await sleep(700 * (attempt + 1));
     }
   }
   // 도달 불가(루프에서 return/throw). 타입 만족용.
